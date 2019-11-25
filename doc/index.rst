@@ -8,7 +8,7 @@ sigfig
     :target: http://sigfig.readthedocs.io/
     :alt: Documentation
 .. image:: https://img.shields.io/pypi/pyversions/sigfig.svg
-    :target: https://pypi.python.org/pypi/sh
+    :target: https://pypi.python.org/pypi/sigfig/
     :alt: Python Versions
 .. image:: https://codecov.io/gh/mikebusuttil/sigfig/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/mikebusuttil/sigfig/
@@ -41,7 +41,7 @@ In-depth documentation can be found here:
 Useful links:
 
 * Python Package Index entry: https://pypi.org/project/sigfig/
-* Source Code: https://github.com/lebigot/uncertainties/
+* Source Code: https://github.com/mikebusuttil/sigfig/
 
 Please direct any comments/suggestions/feedback/bugs to mike.busuttil@gmail.com and valdezt@gmail.com
 
