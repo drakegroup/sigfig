@@ -1,0 +1,4 @@
+_num_parse('X');ValueError
+_num_parse('1X');ValueError
+_num_parse('0.0X');ValueError
+_num_parse('0.01EX');ValueError
