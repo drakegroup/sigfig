@@ -4,8 +4,8 @@ sigfig
 .. image:: https://img.shields.io/pypi/v/sigfig.svg
     :target: https://pypi.org/project/sigfig/
     :alt: Version
-.. image:: https://readthedocs.org/projects/sigfigs/badge/?version=latest
-    :target: http://sigfigs-python-package.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/sigfig/badge/?version=latest
+    :target: http://sigfig.readthedocs.io/
     :alt: Documentation
 .. image:: https://img.shields.io/pypi/pyversions/sigfig.svg
     :target: https://pypi.python.org/pypi/sh

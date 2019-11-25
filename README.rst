@@ -4,8 +4,8 @@ sigfig
 .. image:: https://img.shields.io/pypi/v/sigfig.svg
     :target: https://pypi.org/project/sigfig/
     :alt: Version
-.. image:: https://readthedocs.org/projects/sigfigs/badge/?version=latest
-    :target: http://sigfigs-python-package.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/sigfig/badge/?version=latest
+    :target: http://sigfig.readthedocs.io/
     :alt: Documentation
 .. image:: https://img.shields.io/pypi/pyversions/sigfig.svg
     :target: https://pypi.python.org/pypi/sh
@@ -30,10 +30,10 @@ This is the :mod:`sigfig` Python package used to manipulate and format numerical
 
 In-depth documentation can be found here:
 
-   install
-   usage
-   api
-   roadmap
+   `Installation <https://sigfig.readthedocs.io/en/latest/install.html>`_
+   `Usage Guide <https://sigfig.readthedocs.io/en/latest/usage.html>`_
+   `API Documentation <https://sigfig.readthedocs.io/en/latest/api.html>`_
+   `Project Development & Roadmap<https://sigfig.readthedocs.io/en/latest/roadmap.html>`_
 
 Useful links:
 
