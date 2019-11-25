@@ -23,8 +23,8 @@ This is the :mod:`sigfig` Python package used to manipulate and format numerical
     0.3
     >>> round(3.14159, 2)
     3.1
-    >>> round(3.14159, 0.001567)
-    '3.142 ± 0.002'
+    >>> round(3.14159, 0.003839)
+    '3.142 ± 0.004'
     >>> round(3.141592653589793, 0.00000002567, format='Drake')
     '3.141 592 654(26)'
 

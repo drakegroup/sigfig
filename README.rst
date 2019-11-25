@@ -23,17 +23,17 @@ This is the :mod:`sigfig` Python package used to manipulate and format numerical
     0.3
     >>> round(3.14159, 2)
     3.1
-    >>> round(3.14159, 0.001567)
-    '3.142 ± 0.002'
+    >>> round(3.14159, 0.003839)
+    '3.142 ± 0.004'
     >>> round(3.141592653589793, 0.00000002567, format='Drake')
     '3.141 592 654(26)'
 
 In-depth documentation can be found here:
 
-   `Installation <https://sigfig.readthedocs.io/en/latest/install.html>`_
-   `Usage Guide <https://sigfig.readthedocs.io/en/latest/usage.html>`_
-   `API Documentation <https://sigfig.readthedocs.io/en/latest/api.html>`_
-   `Project Development & Roadmap<https://sigfig.readthedocs.io/en/latest/roadmap.html>`_
+* `Installation <https://sigfig.readthedocs.io/en/latest/install.html>`_
+* `Usage Guide <https://sigfig.readthedocs.io/en/latest/usage.html>`_
+* `API Documentation <https://sigfig.readthedocs.io/en/latest/api.html>`_
+* `Project Development & Roadmap <https://sigfig.readthedocs.io/en/latest/roadmap.html>`_
 
 Useful links:
 
