@@ -22,8 +22,7 @@ copyright = '2019, Michael Busuttil, Travis Valdez'
 author = 'Michael Busuttil, Travis Valdez'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2'
-
+release = '1.1.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -62,3 +61,4 @@ html_static_path = ['_static']
 # -- Custom configuration ----------------------------------------------------
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+master_doc = 'index'
