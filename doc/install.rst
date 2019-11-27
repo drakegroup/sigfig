@@ -15,5 +15,5 @@ can guide you through the process.  However if your version of Python doesn't co
 Manual Install
 --------------
 
-Alternatively, you can :download:`download sigfig.py <https://raw.githubusercontent.com/valdezt/sigfig/master/sigfig/sigfig.py>` and extract it to either your Python Scripts directory or the same directory as the file from which you're using :mod:`sigfig`.
+Alternatively, you can :download:`download sigfig.py <https://raw.githubusercontent.com/drakegroup/sigfig/master/sigfig/sigfig.py>` and extract it to either your Python Scripts directory or the same directory as the file from which you're using :mod:`sigfig`.
 You will need to do the same for the `sortedcontainers module <https://pypi.org/project/sortedcontainers/>`_ - a dependency for this project.

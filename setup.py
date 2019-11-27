@@ -4,9 +4,9 @@ setup(
     name = 'sigfig',
     description = 'Python library for rounding numbers (with expected results)',
 
-    version = '1.1.0',
+    version = '1.1.1',
     license = 'MIT',
-    url = 'https://pypi.org/project/sigfig/',
+    url = 'https://sigfig.readthedocs.io/',
     install_requires =['SortedContainers'],
     packages = find_packages(exclude = ['doc', 'test']),
     long_description = open('README.rst', encoding='utf-8').read()[1:],
