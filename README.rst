@@ -38,7 +38,7 @@ In-depth documentation can be found here:
 Useful links:
 
 * Python Package Index entry: https://pypi.org/project/sigfig/
-* Source Code: https://github.com/mikebusuttil/sigfig/
+* Source Code: https://github.com/drakegroup/sigfig/
 
 Please direct any comments/suggestions/feedback/bugs to mike.busuttil@gmail.com and valdezt@gmail.com
 
