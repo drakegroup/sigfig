@@ -6,3 +6,5 @@
 /test/.coverage
 /test/coverage.xml
 /sigfig/__pycache__
+/dist
+/sigfig.egg-info

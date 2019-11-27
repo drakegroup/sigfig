@@ -7,12 +7,12 @@ setup(
     name = 'sigfig',
     description = ('manipulate and format numerical data for presentation',
                    'through accurately rounding by significant figures,',
-                   'number of decimals, or uncertainty')
+                   'number of decimals, or uncertainty'),
 
     version = '1.1.0',
     license = 'MIT',
     url = 'https://pypi.org/project/sigfig/',
-    install_requires =['SortedContainers']
+    install_requires =['SortedContainers'],
     packages = find_packages(exclude = ['doc', 'test']),
     long_description = long_description,
     long_description_content_type = 'text/x-rst',
