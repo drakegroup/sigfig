@@ -1,4 +1,4 @@
-sigfig
+﻿sigfig
 ======
 
 .. image:: https://img.shields.io/pypi/v/sigfig.svg
@@ -14,19 +14,29 @@ sigfig
     :target: https://codecov.io/gh/mikebusuttil/sigfig/
     :alt: Coverage Status
 
-This is the :mod:`sigfig` Python package used to manipulate and format numerical data for presentation.
+This is the **sigfig** Python package used for rounding numbers (with expected results).
+
+.. code:: python
 
     >>> round(0.25, 1)
     0.2
     >>> from sigfig import round
     >>> round(0.25, decimals=1)
     0.3
-    >>> round(3.14159, 2)
+    >>> round(3.14159, sigfigs=2)
     3.1
-    >>> round(3.14159, 0.003839)
-    '3.142 � 0.004'
-    >>> round(3.141592653589793, 0.00000002567, format='Drake')
+    >>> round(3.14159, uncertainty=0.003639)
+    '3.142 ± 0.004'
+    >>> round('3.141592653589793', '0.00000002567', format='Drake')
     '3.141 592 654(26)'
+
+Key Features:
+
+* round numbers by significant figures/digits
+* round numbers by decimal places
+* round numbers by uncertainty/error
+* format numbers in a variety of common styles & notations
+* read in numbers of any type
 
 In-depth documentation can be found here:
 

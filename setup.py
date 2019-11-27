@@ -1,20 +1,15 @@
-from setuptools import setup, find_packages
-
-with open('README.rst') as f:
-    long_description = f.read()
+﻿from setuptools import setup, find_packages
 
 setup(
     name = 'sigfig',
-    description = ('manipulate and format numerical data for presentation',
-                   'through accurately rounding by significant figures,',
-                   'number of decimals, or uncertainty'),
+    description = 'Python library for rounding numbers (with expected results)',
 
     version = '1.1.0',
     license = 'MIT',
     url = 'https://pypi.org/project/sigfig/',
     install_requires =['SortedContainers'],
     packages = find_packages(exclude = ['doc', 'test']),
-    long_description = long_description,
+    long_description = open('README.rst', encoding='utf-8').read()[1:],
     long_description_content_type = 'text/x-rst',
     author = 'Mike & Travis',
     author_email = 'mike.busuttil@gmail.com, valdezt@gmail.com',
