@@ -25,7 +25,7 @@ This is the **sigfig** Python package used for rounding numbers (with expected r
     0.3
     >>> round(3.14159, sigfigs=2)
     3.1
-    >>> round(3.14159, uncertainty=0.003639)
+    >>> round(3.14159, uncertainty=0.003639, format='std')
     '3.142 ± 0.004'
     >>> round('3.141592653589793', '0.00000002567', format='Drake')
     '3.141 592 654(26)'
