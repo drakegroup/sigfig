@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = 'sigfig'
-copyright = '2019, Michael Busuttil, Travis Valdez'
+copyright = '2021, Michael Busuttil, Travis Valdez'
 author = 'Michael Busuttil, Travis Valdez'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1.0'
+release = '1.1.9'
 
 # -- General configuration ---------------------------------------------------
 

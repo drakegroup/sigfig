@@ -162,7 +162,6 @@ class _Number:
         if sign and self.negative:
             output.append('-')
         for p in range(top, bot - 1, -1):
-            #print(p)
             try:
                 output.append(str(self.map[p]))
             except:
@@ -266,7 +265,6 @@ def _arguments_parse(args, kwargs):
         else:
             given['uncertainty'] = _num_parse(args[1])
             given['output_type'] = str
-        #throw_exception("invalid 2nd argument, expecting number, got %s" % args[1])
     if len(args) > 2:
         warn("last %d argument(s) discarded/ignored" % int(len(args) - 3))
     
@@ -299,6 +297,7 @@ def _arguments_parse(args, kwargs):
                 warn('Ignoring %s=%s, invalid type of %s, expecting integer type' % (key, val, type(val)))
         elif key == 'uncertainty':
             given['uncertainty'] = _num_parse(val)
+            given['output_type'] = str
         elif key == 'prefix':
             if type(val) == bool or val in {'major', 'sci', 'eng'}:
                 given[key] = val
@@ -428,7 +427,7 @@ def _num_parse(num):
 
     if type(num) == type(number):
         return num
-    if not num:
+    if num is None:
         warn('no number provided, assuming zero (0)')
         number = _Number()
         number.map[0] = 0
@@ -605,7 +604,6 @@ def round(*args, **kwargs):
         return num
     
     if 'uncertainty' in given and given['separator'] == 'brackets' and unc.min_power() > 0 and 'external_brackets' not in given:
-        #print(given)
         return num.decimate(given['format'], unc=unc)
 
     output = num.decimate(given['format'])
