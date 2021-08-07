@@ -146,7 +146,7 @@ class _Number:
                         self.map[p] = 0
                 elif last_power > 0:
                     self.map = SortedDict({last_power:0})'''
-    def decimate(self, format, unc=None, zeropadding=True, sign=True):
+    def decimate(self, format, unc=None, zeropadding=True, sign=True, units=''):
         '''
         returns string of all digits in given format {spacing, spacer, decimal},
         with unc=_Number for embedded uncertainty, and optional leading/trailing zeros & sign
@@ -173,7 +173,7 @@ class _Number:
                     output.append(format['decimal'])
                 elif p % format['spacing'] == 0:
                     output.append(format['spacer'])
-        return ''.join(output)
+        return ''.join(output) + units
     def output(self, output_type):
         '''returns number in given type'''
         no_formatting = {'decimal': '', 'spacer': '', 'spacing': 0.1}
@@ -607,10 +607,13 @@ def round(*args, **kwargs):
         return num.decimate(given['format'], unc=unc)
 
     output = num.decimate(given['format'])
+    units = num.prefix if given['prefix'] else ''
+
     if 'output' in given and given['output'] in {list, tuple}:
         if 'uncertainty' in given:
-            return given['output']([output, unc.decimate(given['format'], sign=False)])
-        return given['output']([output])
+            return given['output']([output + units, unc.decimate(given['format'], sign=False, units=units)])
+        return given['output']([output + units])
+
     if 'uncertainty' in given:
         if given['separator'] == 'brackets' and unc.min_power() > 0:
             output += '('+unc.decimate(given['format'], sign=False)+')'
@@ -620,11 +623,7 @@ def round(*args, **kwargs):
             if given['prefix'] and given['prefix'] not in {True, 'major', 'minor', 'all'}:
                 output += num.prefix
             output += given['separator'] + unc.decimate(given['format'], sign=False)
-
-    if given['prefix']:
-        output += num.prefix
-
-    return output
+    return output + units
 
 def roundit(*args, **kwargs):
     '''Depreciated version of round() function with limited scope'''
