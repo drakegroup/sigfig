@@ -11,6 +11,8 @@ from decimal import Decimal
 from warnings import warn, filterwarnings, resetwarnings
 import unittest, csv
 
+from numpy import float64, float32, int64, int32
+
 from sys import path
 path.append('../sigfig')
 from sigfig import round, _num_parse, roundit, round_unc, round_sf
