@@ -5,6 +5,8 @@ from decimal import Decimal
 from sortedcontainers import SortedDict
 from warnings import warn
 
+import numbers
+
 _manual_settings = {}
 _default_settings = {
     'spacing': 0.1,
@@ -251,9 +253,9 @@ def _arguments_parse(args, kwargs):
     Deciphers user intent based on given inputs along with preset defaults
     which returns actionable and sumarized useful variables in a dict.
     '''
-    types = {int, str, Decimal, float, type(_Number()), type(None)}
+    types = (numbers.Number, str, Decimal, _Number, type(None))
     given = {'output_type': type(args[0])}
-    if type(args[0]) not in types:
+    if not isinstance(args[0], types):
         raise TypeError('Invalid input type of %s, expecting 1 of %s' % (type(args[0]), str(types)))
     given['num'] = _num_parse(args[0])
     if len(args) >= 2:
@@ -284,7 +286,7 @@ def _arguments_parse(args, kwargs):
             try:
                 if key == 'crop':
                     key = 'cutoff'
-                if type(val) in [float, Decimal]:
+                if not isinstance(val, numbers.Integral):
                     warn('use integer type for %s argument' % key)
                 if key in {'cutoff', 'crop'} and int(val) < 9:
                     warn('cutoff/crop cannot be < 9, setting to 9')
@@ -356,7 +358,7 @@ def _arguments_parse(args, kwargs):
                         None
                         #warn("overwriting %s=%s with %s=%s" % (prop, given[prop], prop, formats[val][i]))
                     given[prop] = formats[val][i]
-            elif val in types:
+            elif isinstance(val, type) and issubclass(val, types):
                 given['output_type'] = val
                 if 'prefix' in given:
                     del given['prefix']
@@ -387,7 +389,7 @@ def _arguments_parse(args, kwargs):
         else:
             given['decimals'] = given['arg2']
         del given['arg2']
-    if given['output_type'] not in {float, Decimal, type(_Number())}:
+    if not issubclass(given['output_type'], (numbers.Real, Decimal, _Number)):
         given['format'] = {}
         for prop in {'decimal', 'spacer', 'spacing'}:
             if prop in given:
@@ -593,7 +595,7 @@ def round(*args, **kwargs):
         if 'uncertainty' in given:
             unc.increment_power_by(power_shift)
 
-    if given['output_type'] in [int, Decimal, float]:
+    if issubclass(given['output_type'], (numbers.Number, Decimal)):
         if 'output' in given and given['output'] in {tuple, list}:
             if 'uncertainty' not in given:
                 return given['output']([num.output(given['output_type'])])
