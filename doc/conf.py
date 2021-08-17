@@ -22,7 +22,7 @@ copyright = '2021, Michael Busuttil, Travis Valdez'
 author = 'Michael Busuttil, Travis Valdez'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1.10'
+release = '1.2.0'
 
 # -- General configuration ---------------------------------------------------
 

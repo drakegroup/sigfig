@@ -8,7 +8,7 @@
 /sigfig/__pycache__
 /dist
 /sigfig.egg-info
-/build/lib
+/build
 /doc/Makefile
 /doc/_build
 /doc/_static

@@ -4,7 +4,7 @@ setup(
     name = 'sigfig',
     description = 'Python library for rounding numbers (with expected results)',
 
-    version = '1.1.10',
+    version = '1.2.0',
     license = 'MIT',
     url = 'https://sigfig.readthedocs.io/',
     install_requires =['SortedContainers'],
