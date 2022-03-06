@@ -219,3 +219,4 @@
 (None, '-17');{'warn':False};'0 ± 20'
 (1.0,2.0,3.0);{'warn':False};'1 ± 2'
 (1.0,1);{'unknown_arg':False,'warn':False};1.0
+('12',);{'sigfigs':5,'warn':False};'12.000'
