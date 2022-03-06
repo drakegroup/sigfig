@@ -211,7 +211,7 @@ This is an experimental feature which adds a `metric SI unit prefix <https://en.
     >>> round('3679990.14159', '97654', style='Drake', prefix=True)
     '3.68(10)M'
     >>> round('3.67999014159E-10', '0.00125E-10', prefix=True)
-    '368.0 ± 0.1p'
+    '(368.0 ± 0.1)p'
 
 zero behaviour
 --------------
@@ -225,3 +225,15 @@ Any number with a value of zero that is known to 1 or more decimal places will b
     '0 ± 5000'
     >>> round('23', '4732', sep='brackets')
     '0(5)000'
+
+warning suppression
+-------------------
+
+While it's recommended to use Python's built-in warning control through `from warnings import filterwarnings` to define which warnings are presented, you can explicitly define warning behviour with this interface:
+
+    >>> from sigfig import round
+    >>> round('12', sigfigs=5)
+    sigfig.py:587: UserWarning: warning: 5 significant figures requested from number with only 2 significant figures
+    '12.000'
+    >>> round('12', sigfigs=4, warn=False)
+    '12.00'

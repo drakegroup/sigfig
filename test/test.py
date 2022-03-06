@@ -73,6 +73,16 @@ class KnownWarn(unittest.TestCase):
             self.assertEqual(round(*self.args, **self.kwargs), self.output)
         resetwarnings()
 
+class KnownWarnLoud(unittest.TestCase):
+    '''Compares each run of round() with expected warning message without checking proper output'''
+    def __init__(self, args, kwargs, output):
+        super(KnownWarnLoud, self).__init__()
+        self.args = args
+        self.kwargs = kwargs
+        self.output = output
+    def runTest(self):
+        self.assertWarns(UserWarning,round,*self.args,**self.kwargs)
+
 class TestType(unittest.TestCase):
     '''Tests exception raise for invalid input type'''
     def runTest(self):
@@ -124,6 +134,8 @@ def suite():
     suite.addTests(KnownGrtr(x, y, z) for x, y, z in class_cases)
     warn_cases = cases('test_warning.csv')
     suite.addTests(KnownWarn(args, kwargs, output) for args, kwargs, output in warn_cases)
+    warn_loud_cases = cases('test_warn_unmutable.csv')
+    suite.addTests(KnownWarnLoud(args, kwargs, output) for args, kwargs, output in warn_loud_cases)
     suite.addTest(TestType())
     def general_cases(filename):
         with open(filename, newline='') as f:

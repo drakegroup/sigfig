@@ -3,7 +3,7 @@
 
 from decimal import Decimal
 from sortedcontainers import SortedDict
-from warnings import warn
+from warnings import warn, filterwarnings, resetwarnings
 
 import numbers
 
@@ -253,8 +253,21 @@ def _arguments_parse(args, kwargs):
     Deciphers user intent based on given inputs along with preset defaults
     which returns actionable and sumarized useful variables in a dict.
     '''
+    given = {'reset_warnings': False}
+
+    if any([w in kwargs for w in ('warn', 'warning', 'warnings')]):
+        warning = kwargs.get('warn') or kwargs.get('warning') or kwargs.get('warnings')
+        if not warning:
+            filterwarnings('ignore')
+        elif warning == True:
+            resetwarnings()
+        else:
+            resetwarnings()
+            warn(f'warnings argument expected to be True, False, or "once". Got "{warning}"')
+        given['reset_warnings'] = True
+
     types = (numbers.Number, str, Decimal, _Number, type(None))
-    given = {'output_type': type(args[0])}
+    given['output_type'] = type(args[0])
     if not isinstance(args[0], types):
         raise TypeError('Invalid input type of %s, expecting 1 of %s' % (type(args[0]), str(types)))
     given['num'] = _num_parse(args[0])
@@ -595,6 +608,9 @@ def round(*args, **kwargs):
         if 'uncertainty' in given:
             unc.increment_power_by(power_shift)
 
+    if given['reset_warnings']:
+        resetwarnings()
+
     if issubclass(given['output_type'], (numbers.Number, Decimal)):
         if 'output' in given and given['output'] in {tuple, list}:
             if 'uncertainty' not in given:
@@ -625,6 +641,8 @@ def round(*args, **kwargs):
             if given['prefix'] and given['prefix'] not in {True, 'major', 'minor', 'all'}:
                 output += num.prefix
             output += given['separator'] + unc.decimate(given['format'], sign=False)
+            if given['prefix'] == True and units:
+                output = f'({output})'
     return output + units
 
 def roundit(*args, **kwargs):
