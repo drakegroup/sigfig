@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from decimal import Decimal
+from copy import deepcopy
 from sortedcontainers import SortedDict
 from warnings import warn, filterwarnings, resetwarnings
 
@@ -441,7 +442,7 @@ def _num_parse(num):
     exp = 0
 
     if type(num) == type(number):
-        return num
+        return deepcopy(num)
     if num is None:
         warn('no number provided, assuming zero (0)')
         number = _Number()

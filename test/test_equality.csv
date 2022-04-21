@@ -220,3 +220,4 @@
 (1.0,2.0,3.0);{'warn':False};'1 ± 2'
 (1.0,1);{'unknown_arg':False,'warn':False};1.0
 ('12',);{'sigfigs':5,'warn':False};'12.000'
+(2.45324, .5455);{'cutoff':19};'2.5 ± 0.5'
