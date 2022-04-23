@@ -14,7 +14,7 @@ import unittest, csv
 from numpy import float64, float32, int64, int32
 
 from sys import path
-path.append('../sigfig')
+path.insert(0, '../sigfig')
 from sigfig import round, _num_parse, roundit, round_unc, round_sf
 
 def function_parse(func):
