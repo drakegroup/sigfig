@@ -287,7 +287,7 @@ def _arguments_parse(args, kwargs):
     for key in _manual_settings:
         given[key] = _manual_settings[key]
 
-    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 'decimals', 'uncertainty', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'notation', 'form', 'crop'}
+    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 'decimals', 'uncertainty', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
     for key in kwargs:
         val = kwargs[key]
         if key not in keys:
