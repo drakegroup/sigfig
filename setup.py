@@ -1,6 +1,9 @@
-﻿from setuptools import setup, find_packages
+﻿from pathlib import Path
+from setuptools import setup, find_packages
+from yaml import safe_load
 
-version = '1.3.3'
+with open(Path(__file__).parent / 'CITATION.cff') as f:
+    version = safe_load(f)['version']
 
 if __name__ == "__main__":
     setup(
@@ -10,14 +13,18 @@ if __name__ == "__main__":
         version = version,
         license = 'MIT',
         url = 'https://sigfig.readthedocs.io/',
+        docs_url = 'https://sigfig.readthedocs.io/',
+        bugtrack_url = 'https://github.com/drakegroup/sigfig/issues',
         install_requires =['SortedContainers'],
         packages = find_packages(exclude = ['doc', 'test']),
-        long_description = open('README.rst', encoding='utf-8').read()[1:],
+        long_description = open(Path(__file__).parent / 'README.rst', encoding='utf-8').read()[1:],
         long_description_content_type = 'text/x-rst',
         author = 'Mike & Travis',
         author_email = 'mike.busuttil@gmail.com, valdezt@gmail.com',
+        maintainer = 'Mike Busuttil',
+        maintainer_email = 'mike.busuttil@gmail.com',
 
-        keywords = ['round', 'rounding', 'significant figures', 'sigfinicant digits',
+        keywords = ['round', 'rounding', 'significant figures', 'significant digits',
                     'sigfigs', 'sigdigs', 'decimals', 'uncertainty', 'uncertainties',
                     'numeric', 'numerical', 'number', 'numbers', 'data',
                     'format', 'style',  'publication'],
@@ -45,6 +52,8 @@ if __name__ == "__main__":
                     'Programming Language :: Python :: 3.8',
                     'Programming Language :: Python :: 3.9',
                     'Programming Language :: Python :: 3.10',
+                    'Programming Language :: Python :: 3.11',
+                    'Programming Language :: Python :: 3.12',
                     'Topic :: Education',
                     'Topic :: Education :: Computer Aided Instruction (CAI)',
                     'Topic :: Office/Business :: Financial',

@@ -51,6 +51,6 @@ Useful links:
 * Python Package Index entry: https://pypi.org/project/sigfig/
 * Source Code: https://github.com/drakegroup/sigfig/
 
-Please direct any comments/suggestions/feedback/bugs to mike.busuttil@gmail.com and valdezt@gmail.com
+Please direct any comments/suggestions/feedback/bugs to [the issues page](https://github.com/drakegroup/sigfig/issues)
 
 Thanks for downloading :)
