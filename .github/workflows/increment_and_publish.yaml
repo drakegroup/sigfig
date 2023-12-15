@@ -16,15 +16,13 @@ jobs:
       - name: Checking out v3
         uses: actions/checkout@v3
 
-      - name: Install Python and dependencies
+      - name: Install Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: |
-          python -m
-          pip install wheel pyyaml sortedcontainers requests semver
+        run: pip install wheel pyyaml sortedcontainers requests semver click
 
       - name: Increment version
         run: python ./.github/workflows/version.py --increment
@@ -34,3 +32,13 @@ jobs:
           git add .
           git commit -m "increment to v$(python ./.github/workflows/version.py --get)"
           git push --force
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@27a0e8a
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          repository_url: https://upload.pypi.org/legacy/
+          build_args: --no-deps
+          distributions: sdist bdist_wheel
+          skip_existing: true
