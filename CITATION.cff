@@ -14,5 +14,5 @@ abstract: >-
   sigfig is a Python package used for rounding numbers (with
   expected results).
 license: MIT
-version: 1.3.2
+version: 1.3.3
 date-released: '2022-04-23'

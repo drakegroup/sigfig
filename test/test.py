@@ -14,7 +14,8 @@ import unittest, csv
 from numpy import float64, float32, int64, int32
 
 from sys import path
-path.insert(0, '../sigfig')
+from pathlib import Path
+path.insert(0, str(Path(__file__).parent / "../sigfig"))
 from sigfig import round, _num_parse, roundit, round_unc, round_sf
 
 def function_parse(func):
@@ -114,7 +115,7 @@ class KnownExcp(unittest.TestCase):
 def suite():
     '''Function containing a suite of all test cases for sigfig module'''
     def cases(filename):
-        with open(filename, newline='') as f:
+        with open(Path(__file__).parent / filename, newline='') as f:
             line = 0
             for case in csv.reader(f, delimiter=';'):
                 line += 1
@@ -138,7 +139,7 @@ def suite():
     suite.addTests(KnownWarnLoud(args, kwargs, output) for args, kwargs, output in warn_loud_cases)
     suite.addTest(TestType())
     def general_cases(filename):
-        with open(filename, newline='') as f:
+        with open(Path(__file__).parent / filename, newline='') as f:
             line = 0
             for case in csv.reader(f, delimiter=';'):
                 line += 1

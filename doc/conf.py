@@ -10,16 +10,17 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath('..'))
+from pathlib import Path
+from sys import path
+path.insert(0, str(Path(__file__).parent / '..'))
 from setup import version
 
 # -- Project information -----------------------------------------------------
 
+from datetime import datetime
 project = 'sigfig'
-copyright = '2022, Michael Busuttil, Travis Valdez'
 author = 'Michael Busuttil, Travis Valdez'
+copyright = f'{datetime.now().strftime("%Y")}, {author}'
 
 # The full version, including alpha/beta/rc tags
 release = version
