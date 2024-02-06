@@ -65,7 +65,12 @@ class KnownWarn(unittest.TestCase):
         self.kwargs = kwargs
         self.output = output
     def runTest(self):
-        self.assertWarns(UserWarning,round,*self.args,**self.kwargs)
+        with self.assertWarns(UserWarning)as warn_context:
+            round(*self.args,**self.kwargs)
+        # Check that the warning is associated with the caller.
+        self.assertEqual(__file__, warn_context.filename, 'Warning not associated with test call')
+        # (BRITTLE) Need to change this if the call to round moves around.
+        self.assertEqual(69, warn_context.lineno, 'Warning not associated with test call')
         filterwarnings("ignore")
         if type(self.output) == float:
             self.assertAlmostEqual(round(*self.args, **self.kwargs), self.output)
