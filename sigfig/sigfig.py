@@ -19,9 +19,9 @@ def _get_warn_stackarg(best_guess=2):
     Returns:
     a kwargs dict to be passed to the warn function.
     '''
-    if sys.version_info >= (3, 12):
-        # Python 3.12 simplifies this process.
-        return {'skip_file_prefixes': (__file__,)}
+    # Theoretically, Python 3.12 simplifies this process with 'skip_file_prefixes'
+    # in warnings, but that didn't seem to work correctly because of path normalization
+    # bugs.
     stacklevel = 0
     try:
         frame = currentframe()
