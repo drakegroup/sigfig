@@ -7,8 +7,9 @@ from requests import get
 from semver import Version
 import click
 
-path.insert(0, str(Path(__file__).parent / "../.."))
-from setup import version as local_version
+citation_path = Path(__file__).parent / "../../CITATION.cff"
+
+local_version = safe_load(open(citation_path))['version']
 local_version = Version.parse(local_version)
 
 def apply_citation_version(version):
