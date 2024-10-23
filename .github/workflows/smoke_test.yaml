@@ -22,7 +22,7 @@ jobs:
 
       - name: Build docs
         run: |
-          cd doc
+          cd docs
           poetry run make html
 
       - name: Run tests

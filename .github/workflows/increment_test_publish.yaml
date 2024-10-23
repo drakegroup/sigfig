@@ -23,7 +23,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install libxslt1-dev libxml2-dev
           pip install poetry
           poetry install
 
@@ -39,7 +38,7 @@ jobs:
 
       - name: Build docs
         run: |
-          cd doc
+          cd docs
           poetry run make html
 
       - name: Bundle for PyPI
