@@ -12,15 +12,21 @@ Using the :mod:`sigfig` module's :meth:`round` function is very simple.
 
 Begin by importing the module and adding its features to the built-in round function:
 
+.. code:: python
+
     >>> from sigfig import round
 
 let's round a number to 4 significant figures
+
+.. code:: python
 
     >>> round(123.456, 4)
     123.5
 
 but let's get in the habit of storing our numbers as :class:`str`\ings to circumvent :class:`float`'s `inherent lack of precision <https://docs.python.org/3/tutorial/floatingpoint.html>`_.
-:meth:`round` will always return in the rounded number in the same type it was given unless told otherwise:
+:meth:`round` will always return the rounded number in the same type it was given unless told otherwise:
+
+.. code:: python
 
     >>> round('123.456', 4)
     '123.5'
@@ -32,6 +38,8 @@ but let's get in the habit of storing our numbers as :class:`str`\ings to circum
 
 We can round numbers by number of decimals, by significant figures/digits, or by the number's :ref:`uncertainty <Uncertainty Rounding Rules>`:
 
+.. code:: python
+
     >>> round('3.14159', sigfigs=2)
     '3.1'
     >>> round('3.14159', decimals=2)
@@ -41,12 +49,16 @@ We can round numbers by number of decimals, by significant figures/digits, or by
 
 which the function will choose based on the type/context of the 2nd argument:
 
+.. code:: python
+
     >>> round('3.14159', 2)
     '3.1'
     >>> round('3.14159', '0.0007524')
     '3.1416 ± 0.0008'
 
 When rounding by uncertainties we can isolate the rounded number and/or uncertainty by setting the ``sep``\aration keyword argument to :class:`list` or :class:`tuple` :
+
+.. code:: python
 
     >>> round('123456E-5', '123E-6', sep=tuple)[0]
     '1.2346'
@@ -57,6 +69,8 @@ Formatting
 ##########
 
 We can use :meth:`round` to output numbers in a myriad of :ref:`different formats <Formatting Output>`:
+
+.. code:: python
 
     >>> round('86375.25799', decimals=2, notation='sci') # scientific notation
     '8.637526E4'
@@ -69,10 +83,14 @@ We can use :meth:`round` to output numbers in a myriad of :ref:`different format
 
 or we can create our own custom format either from scratch
 
+.. code:: python
+
     >>> round('17265098762.12345678', .000000289, spacing=5, spacer=',', decimal='_', separation=' +/- ')
     '1,72650,98762_12345,68 +/- 0_00000,03'
 
 or by modifying an existing format:
+
+.. code:: python
 
     >>> round('86375.25799', '0.023759', format='PDG', sep='brackets')
     '86375.258(24)'

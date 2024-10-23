@@ -5,7 +5,8 @@ Automatic Install
 -----------------
 
 To install the :mod:`sigfig` module, simply run this command in your terminal of choice:
-::
+
+.. code:: bash
 
     $ pip install sigfig
 

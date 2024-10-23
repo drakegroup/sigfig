@@ -10,11 +10,10 @@
 .. image:: https://img.shields.io/pypi/pyversions/sigfig.svg
     :target: https://pypi.python.org/pypi/sigfig/
     :alt: Python Versions
-.. image:: https://codecov.io/gh/mikebusuttil/sigfig/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/mikebusuttil/sigfig/
+.. image:: https://github.com/drakegroup/sigfig/blob/master/test/coverage.svg
     :alt: Coverage Status
 
-This is the **sigfig** Python package used for rounding numbers (with expected results).
+This is the :mod:`sigfig` Python package used for rounding numbers (with expected results).
 
 .. code:: python
 
@@ -50,6 +49,6 @@ Useful links:
 * Python Package Index entry: https://pypi.org/project/sigfig/
 * Source Code: https://github.com/drakegroup/sigfig/
 
-Please direct any comments/suggestions/feedback/bugs to [the issues page](https://github.com/drakegroup/sigfig/issues)
+Please direct any comments/suggestions/feedback/bugs to `the issues page <https://github.com/drakegroup/sigfig/issues>`_ or `submit a pull request <https://sigfig.readthedocs.io/en/latest/roadmap.html#contribution-guide>`
 
 Thanks for downloading :)

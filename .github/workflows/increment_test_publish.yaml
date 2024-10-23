@@ -1,4 +1,4 @@
-name: version auto-incrementing & package publishing
+name: version auto-incrementing, coverage testing, & package publishing
 on:
   workflow_dispatch:
   pull_request:
@@ -22,10 +22,16 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install wheel pyyaml sortedcontainers requests semver click
+        run: pip install wheel pyyaml sortedcontainers requests semver click numpy coverage coverage-badge
 
       - name: Increment version
         run: python ./.github/workflows/version.py --increment
+
+      - name: Run tests and generate coverage badge
+        run: |
+          coverage run test/test.py
+          coverage report -m sigfig/sigfig.py
+          coverage-badge -o test/coverage.svg
 
       - name: Commit and push changes
         run: |
