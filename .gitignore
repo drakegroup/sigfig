@@ -1,4 +1,5 @@
-﻿.coverage
+﻿.pypirc
+.coverage
 coverage.xml
 __pycache__
 /dist
