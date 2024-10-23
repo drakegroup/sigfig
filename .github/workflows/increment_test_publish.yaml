@@ -23,6 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get install libxslt1-dev libxml2-dev
           pip install poetry
           poetry install
 
@@ -34,6 +35,15 @@ jobs:
           poetry run coverage run test/test.py
           poetry run coverage report -m sigfig/sigfig.py
           poetry run coverage-badge -o test/coverage.svg
+
+      - name: Build docs
+        run: |
+          cd doc
+          poetry run make html
+
+      - name: Bundle for PyPI
+        run: |
+          poetry run python setup.py sdist bdist_wheel
 
       - name: Commit and push changes
         run: |
