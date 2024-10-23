@@ -1,9 +1,9 @@
-name: Tests
+name: Builds docs and runs coverage report
 on:
   pull_request:
 
 jobs:
-  coverage_report:
+  smoke_test:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,9 +16,16 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install sortedcontainers numpy coverage
+        run: |
+          pip install poetry
+          poetry install
+
+      - name: Build docs
+        run: |
+          cd doc
+          poetry run make html
 
       - name: Run tests
         run: |
-          coverage run test/test.py
-          coverage report -m sigfig/sigfig.py
+          poetry run coverage run test/test.py
+          poetry run coverage report -m sigfig/sigfig.py
