@@ -34,6 +34,7 @@ jobs:
         run: |
           poetry run coverage run test/test.py
           poetry run coverage report -m sigfig/sigfig.py
+          rm test/coverage.svg
           poetry run coverage-badge -o test/coverage.svg
 
       - name: Build docs
