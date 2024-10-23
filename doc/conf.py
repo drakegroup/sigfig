@@ -10,19 +10,18 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath('..'))
-from setup import version
 
 # -- Project information -----------------------------------------------------
 
+from datetime import datetime
 project = 'sigfig'
-copyright = '2022, Michael Busuttil, Travis Valdez'
 author = 'Michael Busuttil, Travis Valdez'
+copyright = f'{datetime.now().strftime("%Y")}, {author}'
 
 # The full version, including alpha/beta/rc tags
-release = version
+from pathlib import Path
+from yaml import safe_load
+release = safe_load(open(Path(__file__).parent / '../CITATION.cff'))['version']
 
 # -- General configuration ---------------------------------------------------
 
@@ -55,7 +54,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 
 # -- Custom configuration ----------------------------------------------------

@@ -1,0 +1,50 @@
+name: version auto-incrementing, coverage testing, & package publishing
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+    branches: ["master"]
+
+jobs:
+  build:
+    if: github.event.pull_request.merged || github.event_name == 'workflow_dispatch'
+    
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checking out v3
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install wheel pyyaml sortedcontainers requests semver click numpy coverage coverage-badge
+
+      - name: Increment version
+        run: python ./.github/workflows/version.py --increment
+
+      - name: Run tests and generate coverage badge
+        run: |
+          coverage run test/test.py
+          coverage report -m sigfig/sigfig.py
+          coverage-badge -o test/coverage.svg
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "increment to v$(python ./.github/workflows/version.py --get)"
+          git push --force
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@27a0e8a
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          repository_url: https://upload.pypi.org/legacy/
+          build_args: --no-deps
+          distributions: sdist bdist_wheel
+          skip_existing: true

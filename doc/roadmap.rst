@@ -43,7 +43,7 @@ The current interface is multi-dimensional and very forgiving which allows for a
 Possible Features
 -----------------
 
-Other features looking for implementation by any potential contributers are welcomed, would be greatly appreciated, are detailed below, and (subjectively) ordered by priority:
+Other features looking for implementation by any potential contributors are welcomed, would be greatly appreciated, are detailed below, and (subjectively) ordered by priority:
 
 Baking and User-Defined Formats/Styles
 ######################################
@@ -70,6 +70,8 @@ Units, Formatted Numbers, and Unit Prefixes
 Modification of the :meth:`_num_parse` function can be made without much effort to allow for formatted numbers (ie. ``'1,237.0'``), currency (ie. ``'$3,157.00'``), or numeric data with units (ie. ``'3475.2753nm'``) to be accepted.  This formatting data can be parsed and interpreted alongside the numeric data and the resulting output from the :meth:`round` operation can be given (by default) in the same format as the input was given.
 
 Also, common units with their prefixes can be parsed so that more suitable prefixes for units can be chosen or explicitly specified by a new keyword argument.  For example:
+
+.. code:: python
 
     >>> round('3475.2753nm', '45.9479nm')
     '3.48 ± 0.05 μm'
@@ -98,8 +100,40 @@ A small gain to efficiency can be made by first parsing the uncertainty, number 
 
 ----
 
-Contributor Notes
------------------
+Contribution Guide
+------------------
+
+Getting Started
+###############
+
+Clone the repo and configure your environment:
+
+.. code:: bash
+
+    $ git clone https://github.com/drakegroup/sigfig.git
+    $ cd sigfig
+    $ curl -sSL https://install.python-poetry.org | python3 -
+
+1. Fork the repository on GitHub.
+2. Clone your fork locally.
+3. Create a new branch for your changes.
+4. Make your changes and commit them to your branch.
+5. Push your changes to your fork on GitHub.
+6. Open a pull request to the master branch of the main repository.
+
+
+Testing
+#######
+
+All new features should be accompanied by tests.  To run the tests and view the coverage report:
+
+.. code:: bash
+
+    $ coverage run test/test.py
+    $ coverage report -m sigfig/sigfig.py
+
+Style
+#####
 
 :mod:`sigfig` was developed with a few :pep:`20` idioms in mind:
 
@@ -109,4 +143,16 @@ Contributor Notes
     - Complex is better than complicated.
     - Readability counts.
 
-Refer to :pep:`8` and the `Google Python Style Guide <http://google.github.io/styleguide/pyguide.html>`_ for best practices when in doubt and thank you for considering contribution :)
+Refer to :pep:`8` and the `Google Python Style Guide <http://google.github.io/styleguide/pyguide.html>`_ where possible... but no need to be dogmatic about it.
+
+Documentation
+#############
+
+To build the documentation locally:
+
+.. code:: bash
+
+    $ cd doc
+    $ make html
+
+Then open the file ``doc/_build/html/index.html`` in your browser.

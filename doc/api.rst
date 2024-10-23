@@ -28,6 +28,8 @@ Default value: ``None``
 
 Controls how many significant figures the given number is to be rounded to in accordance with `significant figures rounding rules <https://en.wikipedia.org/wiki/Significant_figures#Significant_figures_rules_explained>`_.  Can be specified with ``sigfigs`` keyword argument or by passing as 2nd argument of type :class:`int`.  When specified, it should be an :class:`int` greater than 0.
 
+.. code:: python
+
     >>> from sigfig import round
     >>> round(12.7654, sigfigs=4)
     12.77
@@ -40,6 +42,8 @@ decimals
 Default value: ``None``
 
 Controls how many decimal places (or negative ten's power) the given number is to be rounded to in accordance with `decimal place rounding rules <https://en.wikipedia.org/wiki/Significant_figures#Rounding_and_decimal_places>`_.  When specified, it should be an :class:`int` of any value.
+
+.. code:: python
 
     >>> from sigfig import round
     >>> round(12.7654, decimals=3)
@@ -55,6 +59,8 @@ Default value: ``None``
 Takes the uncertainty which will determine how many decimal places the given number is rounded to in accordance with :ref:`Uncertainty Rounding Rules` and ``cutoff`` value (default value: 9).  In the default ``cutoff`` case these rules dictate that the uncertainty is rounded to 1 significant figure and the given number is rounded to the same number of decimals as the uncertainty.
 By specifying an uncertainty, both the rounded number and rounded uncertainty will be returned (in a string separated by " ± " by default)
 Can be specified with ``uncertainty``/``unc`` keyword argument or by passing as 2nd argument in numeric-interpreted type (except :class:`int`) to :meth:`round`.
+
+.. code:: python
 
     >>> from sigfig import round
     >>> round('3.14159', uncertainty='0.6567')
@@ -76,6 +82,8 @@ Default value: ``9``
 
 The uncertainty magnitude value (:class:`int` ≥ 9) after which the uncertainty value is rounded with 1 less digit.
 
+.. code:: python
+
     >>> from sigfig import round
     >>> round('3.14159', '0.6567', cutoff=65)
     '3.1 ± 0.7'
@@ -96,6 +104,8 @@ Default value: ``'standard'``
 
 Output number format notation can be one of ``standard``/``std`` (default) for `standard notation` without exponentiation, ``engineering``/``eng`` for `engineering notation <https://en.wikipedia.org/wiki/Engineering_notation>`_, or ``scientific``/``sci`` for `scientific notation <https://en.wikipedia.org/wiki/Scientific_notation>`_.
 
+.. code:: python
+
     >>> from sigfig import round
     >>> round('3679.14159', decimals=2, notation='scientific')
     '3.67914E3'
@@ -113,6 +123,8 @@ Default value: ``type(arg[0])``
 
 Return type can be any numeric-interpreted type (i.e. :class:`decimal.Decimal`, :class:`float`, :class:`str`, :class:`int`) and should not be a string of that type (i.e. Use ``float`` instead of ``'float'``).
 
+.. code:: python
+
     >>> from sigfig import round
     >>> from decimal import Decimal
     >>> round('3679.14159', decimals=2, output_type=float)
@@ -128,6 +140,8 @@ spacing
 Default value: ``None``
 
 Adds a ``spacer`` character every ``spacing``'th digit.  Should be :class:`int` ≥ 1.
+
+.. code:: python
 
     >>> from sigfig import round
     >>> round('3679.14159', spacing=3, spacer=' ')
@@ -149,6 +163,8 @@ Default value: ``'.'``
 
 Changes the decimal point character (:class:`str`).
 
+.. code:: python
+
     >>> from sigfig import round
     >>> round('3679.14159', decimals=2, decimal=',')
     '3679,14'
@@ -162,6 +178,8 @@ separation (sep)
 Default value: ``' ± '``
 
 Changes the string which separates a number from it's uncertainty.  Recognizes the special strings ``'brackets'`` for in-line bracketed uncertainty, ``'external_brackets'`` for the special case of uncertainties greater than 10, and :class:`tuple` or :class:`list` which allows number and uncertainty to be stored independently.
+
+.. code:: python
 
     >>> from sigfig import round
     >>> round('3679.14159', '0.00123', separation='+/-')
@@ -181,6 +199,8 @@ format (style)
 Default value: ``None``
 
 Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Group's <http://drake.sharcnet.ca/>`_ preferred formatting of ``cutoff=29, spacer=3, spacing=' ', separation='brackets'`` and `The Particle Data Group's <http://pdg.lbl.gov/>`_ preferred formatting of ``cutoff=35`` (see `5.3 Rounding <http://pdg.lbl.gov/2011/reviews/rpp2011-rev-rpp-intro.pdf>`_).
+
+.. code:: python
 
     >>> from sigfig import round
     >>> round('3679990.14159', '0.00125', format='Drake')
@@ -207,16 +227,20 @@ Default value: ``None``
 
 This is an experimental feature which adds a `metric SI unit prefix <https://en.wikipedia.org/wiki/Metric_prefix#List_of_SI_prefixes>`_ to the end of the outputted string (or multiple prefixes in the case of very big or very small numbers).  This feature behaves similar to engineering notation except using prefixes instead of exponents.  It has some unresolved edge cases that can be fully flushed out if found useful and requested.
 
+.. code:: python
+
     >>> from sigfig import round
     >>> round('3679990.14159', '97654', style='Drake', prefix=True)
     '3.68(10)M'
     >>> round('3.67999014159E-10', '0.00125E-10', prefix=True)
     '(368.0 ± 0.1)p'
 
-zero behaviour
---------------
+zero behavior
+-------------
 
 Any number with a value of zero that is known to 1 or more decimal places will be represented with all trailing zeros (ie. 0.00 is known to 2 decimal places and all trailing zeros are displayed).  Conversely any number with a value of zero that is known to -1 or fewer decimal places will be represented with only 1 digit (ie. 000 will only be displayed as 0).  The only exception is in the case of (non-external) bracketed uncertainty when the number is zero and known to -1 or fewer decimal places.  Below is an example of each scenario:
+
+.. code:: python
 
     >>> from sigfig import round
     >>> round('0.00004567', decimals=3)
@@ -229,7 +253,9 @@ Any number with a value of zero that is known to 1 or more decimal places will b
 warning suppression
 -------------------
 
-While it's recommended to use Python's built-in warning control through `from warnings import filterwarnings` to define which warnings are presented, you can explicitly define warning behviour with this interface:
+While it's recommended to use Python's built-in warning control through `from warnings import filterwarnings` to define which warnings are presented, you can explicitly define warning behavior with this interface:
+
+.. code:: python
 
     >>> from sigfig import round
     >>> round('12', sigfigs=5)
