@@ -32,5 +32,6 @@ jobs:
 
       - name: Check build
         run: |
-          poetry run python setup.py sdist bdist_wheel
+          poetry run python ./.github/workflows/set_python_version.py "^3.6"
+          poetry run python -m build
           poetry run twine check dist/*
