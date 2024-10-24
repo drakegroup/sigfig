@@ -11,6 +11,7 @@
     :target: https://pypi.python.org/pypi/sigfig/
     :alt: Python Versions
 .. image:: https://raw.githubusercontent.com/drakegroup/sigfig/refs/heads/master/test/coverage.svg
+    :target: https://github.com/drakegroup/sigfig/actions/workflows/smoke_test.yaml
     :alt: Coverage Status
 
 This is the **sigfig** Python package used for rounding numbers (with expected results).
@@ -46,8 +47,15 @@ In-depth documentation can be found here:
 
 Useful links:
 
-* Python Package Index entry: https://pypi.org/project/sigfig/
-* Source Code: https://github.com/drakegroup/sigfig/
+.. |pypi| image:: https://raw.githubusercontent.com/drakegroup/sigfig/refs/heads/master/doc/pypi-logo.svg
+    :target: https://pypi.org/project/sigfig
+    :height: 1em
+.. |github| image:: https://raw.githubusercontent.com/FortAwesome/Font-Awesome/refs/heads/master/svgs/brands/github.svg
+    :target: https://github.com/drakegroup/sigfig
+    :height: 1em
+
+*  |pypi| `Python Package Index entry <https://pypi.org/project/sigfig>`_ 
+*  |github| `Source Code <https://github.com/drakegroup/sigfig>`_
 
 Please direct any comments/suggestions/feedback/bugs to `the issues page <https://github.com/drakegroup/sigfig/issues>`_ or `submit a pull request <https://sigfig.readthedocs.io/en/latest/roadmap.html#contribution-guide>`
 
