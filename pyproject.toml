@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "sigfig"
-version = "1.3.7"
+version = "1.3.8"
 description = "Python library for rounding numbers (with expected results)"
 authors = [ "Michael Busuttil <mike.busuttil@gmail.com>", "Travis Valdez <valdezt@gmail.com>",]
 maintainers = [ "Michael Busuttil <mike.busuttil@gmail.com>",]
