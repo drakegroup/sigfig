@@ -59,7 +59,5 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
-          repository_url: https://upload.pypi.org/legacy/
-          build_args: --no-deps
-          distributions: sdist bdist_wheel
-          skip_existing: true
+          repository-url: https://upload.pypi.org/legacy/
+          skip-existing: true
