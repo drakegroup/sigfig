@@ -1,4 +1,4 @@
-name: Builds docs and runs coverage report
+name: Builds docs, run coverage report, check build
 on:
   pull_request:
 
@@ -20,12 +20,17 @@ jobs:
           pip install poetry
           poetry install
 
+      - name: Run tests
+        run: |
+          poetry run coverage run test/test.py
+          poetry run coverage report -m sigfig/sigfig.py
+
       - name: Build docs
         run: |
           cd doc
           poetry run make html
 
-      - name: Run tests
+      - name: Check build
         run: |
-          poetry run coverage run test/test.py
-          poetry run coverage report -m sigfig/sigfig.py
+          poetry run python setup.py sdist bdist_wheel
+          poetry run twine check dist/*

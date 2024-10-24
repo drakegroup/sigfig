@@ -1,8 +1,10 @@
-﻿.coverage
+﻿.pypirc
+.coverage
 coverage.xml
 __pycache__
 /dist
 /sigfig.egg-info
+/htmlcov
 /build
 /doc/Makefile
 /doc/_build

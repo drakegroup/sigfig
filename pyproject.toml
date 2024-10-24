@@ -4,9 +4,20 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "sigfig"
-version = "1.3.4"
+version = "1.3.6"
 description = "Python library for rounding numbers (with expected results)"
 authors = [ "Michael Busuttil <mike.busuttil@gmail.com>", "Travis Valdez <valdezt@gmail.com>",]
+maintainers = [ "Michael Busuttil <mike.busuttil@gmail.com>",]
+readme = "README.rst"
+license = "MIT License"
+keywords = [ "round", "rounding", "significant figures", "significant digits", "sigfigs", "sigdigs", "decimals", "uncertainty", "uncertainties", "numeric", "numerical", "number", "numbers", "data", "format", "style", "publication",]
+classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "Intended Audience :: Education", "Intended Audience :: Financial and Insurance Industry", "Intended Audience :: Healthcare Industry", "Intended Audience :: Other Audience", "Intended Audience :: Manufacturing", "Intended Audience :: Science/Research", "License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3.6", "Programming Language :: Python :: 3.7", "Programming Language :: Python :: 3.8", "Programming Language :: Python :: 3.9", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12", "Operating System :: OS Independent", "Topic :: Education", "Topic :: Education :: Computer Aided Instruction (CAI)", "Topic :: Office/Business :: Financial", "Topic :: Scientific/Engineering", "Topic :: Scientific/Engineering :: Information Analysis", "Topic :: Scientific/Engineering :: Mathematics", "Topic :: Scientific/Engineering :: Physics", "Topic :: Software Development", "Topic :: Software Development :: Libraries", "Topic :: Software Development :: Libraries :: Python Modules", "Topic :: Utilities",]
+
+[tool.poetry.urls]
+Homepage = "https://sigfig.readthedocs.io/"
+Documentation = "https://sigfig.readthedocs.io/"
+Repository = "https://github.com/drakegroup/sigfig.git"
+Issues = "https://github.com/drakegroup/sigfig/issues"
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -23,3 +34,5 @@ click = "^8.1.7"
 coverage-badge = "^1.1.2"
 sphinx = "^8.1.3"
 sphinx-rtd-theme = "^3.0.1"
+twine = "^5.1.1"
+build = "^1.2.2.post1"
