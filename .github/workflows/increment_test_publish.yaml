@@ -38,12 +38,13 @@ jobs:
 
       - name: Build docs
         run: |
-          cd docs
+          cd doc
           poetry run make html
 
-      - name: Bundle for PyPI
+      - name: Bundle for PyPI and check
         run: |
           poetry run python setup.py sdist bdist_wheel
+          poetry run twine check dist/*
 
       - name: Commit and push changes
         run: |
