@@ -4,9 +4,10 @@ coverage.xml
 __pycache__
 /dist
 /sigfig.egg-info
+/htmlcov
 /build
-/docs/Makefile
-/docs/_build
-/docs/_static
-/docs/_templates
-/docs/make.bat
+/doc/Makefile
+/doc/_build
+/doc/_static
+/doc/_templates
+/doc/make.bat

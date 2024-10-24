@@ -1,5 +1,5 @@
 ﻿sigfig
-======
+=======
 
 .. image:: https://img.shields.io/pypi/v/sigfig.svg
     :target: https://pypi.org/project/sigfig/
@@ -10,10 +10,10 @@
 .. image:: https://img.shields.io/pypi/pyversions/sigfig.svg
     :target: https://pypi.python.org/pypi/sigfig/
     :alt: Python Versions
-.. image:: https://github.com/drakegroup/sigfig/blob/master/test/coverage.svg
+.. image:: https://raw.githubusercontent.com/drakegroup/sigfig/refs/heads/master/test/coverage.svg
     :alt: Coverage Status
 
-This is the :mod:`sigfig` Python package used for rounding numbers (with expected results).
+This is the **sigfig** Python package used for rounding numbers (with expected results).
 
 .. code:: python
 
