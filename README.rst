@@ -11,7 +11,7 @@
     :target: https://pypi.python.org/pypi/sigfig/
     :alt: Python Versions
 .. image:: https://raw.githubusercontent.com/drakegroup/sigfig/refs/heads/master/test/coverage.svg
-    :target: https://pypi.python.org/pypi/sigfig/
+    :target: https://github.com/drakegroup/sigfig/actions/workflows/smoke_test.yaml
     :alt: Coverage Status
 
 This is the **sigfig** Python package used for rounding numbers (with expected results).
