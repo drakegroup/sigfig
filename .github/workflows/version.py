@@ -1,6 +1,5 @@
 from pathlib import Path
 from datetime import datetime
-from sys import path
 from yaml import safe_load, safe_dump
 import toml
 from requests import get

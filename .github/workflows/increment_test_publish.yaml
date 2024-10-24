@@ -43,7 +43,7 @@ jobs:
 
       - name: Bundle for PyPI and check
         run: |
-          poetry run python setup.py sdist bdist_wheel
+          poetry run python -m build
           poetry run twine check dist/*
 
       - name: Commit and push changes
@@ -53,6 +53,12 @@ jobs:
           git add .
           git commit -m "increment to v$(poetry run python ./.github/workflows/version.py --get)"
           git push --force
+
+      - name: Specify required Python version for PyPI metadata and re-build
+        run: |
+          poetry run python ./.github/workflows/set_python_version.py "^3.6"
+          poetry run python -m build
+          poetry run twine check dist/*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
