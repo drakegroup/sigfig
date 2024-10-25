@@ -1,0 +1,69 @@
+name: version auto-incrementing, coverage testing, & package publishing
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+    branches: ["master"]
+
+jobs:
+  build:
+    if: github.event.pull_request.merged || github.event_name == 'workflow_dispatch'
+    
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checking out v3
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+
+      - name: Increment version
+        run: poetry run python ./.github/workflows/version.py --increment
+
+      - name: Run tests and generate coverage badge
+        run: |
+          poetry run coverage run test/test.py
+          poetry run coverage report -m sigfig/sigfig.py
+          rm test/coverage.svg
+          poetry run coverage-badge -o test/coverage.svg
+
+      - name: Build docs
+        run: |
+          cd doc
+          poetry run make html
+
+      - name: Bundle for PyPI and check
+        run: |
+          poetry run python -m build
+          poetry run twine check dist/*
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add .
+          git commit -m "increment to v$(poetry run python ./.github/workflows/version.py --get)"
+          git push --force
+
+      - name: Specify required Python version for PyPI metadata and re-build
+        run: |
+          poetry run python ./.github/workflows/set_python_version.py "^3.6"
+          poetry run python -m build
+          poetry run twine check dist/*
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          repository-url: https://upload.pypi.org/legacy/
+          skip-existing: true

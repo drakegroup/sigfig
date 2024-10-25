@@ -1,0 +1,37 @@
+name: Builds docs, run coverage report, check build
+on:
+  pull_request:
+
+jobs:
+  smoke_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checking out v3
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+
+      - name: Run tests
+        run: |
+          poetry run coverage run test/test.py
+          poetry run coverage report -m sigfig/sigfig.py
+
+      - name: Build docs
+        run: |
+          cd doc
+          poetry run make html
+
+      - name: Check build
+        run: |
+          poetry run python ./.github/workflows/set_python_version.py "^3.6"
+          poetry run python -m build
+          poetry run twine check dist/*

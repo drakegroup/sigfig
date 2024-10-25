@@ -1,13 +1,10 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/.vs
-/test/.coverage
-/test/coverage.xml
-/sigfig/__pycache__
+﻿.pypirc
+.coverage
+coverage.xml
+__pycache__
 /dist
 /sigfig.egg-info
+/htmlcov
 /build
 /doc/Makefile
 /doc/_build
