@@ -177,10 +177,14 @@ class _Number:
                 elif p % format['spacing'] == 0:
                     output.append(format['spacer'])
         return ''.join(output) + units
+    @staticmethod
+    def _int(num):
+        return int(float(num))
     def output(self, output_type):
         '''returns number in given type'''
         no_formatting = {'decimal': '', 'spacer': '', 'spacing': 0.1}
         num = self.decimate(no_formatting, zeropadding=False) or "0"
+        output_type = self._int if output_type == int else output_type
         return output_type(f"{num}E{self.min_power()}")
     def __gt__(self, other):
         if self.max_power() > other.max_power():
@@ -252,7 +256,7 @@ class _Number:
 def _arguments_parse(args, kwargs):
     '''Private function for use only in round() function:
     Deciphers user intent based on given inputs along with preset defaults
-    which returns actionable and sumarized useful variables in a dict.
+    which returns actionable and summarized useful variables in a dict.
     '''
     given = {'reset_warnings': False}
 
@@ -270,7 +274,7 @@ def _arguments_parse(args, kwargs):
     types = (numbers.Number, str, Decimal, _Number, type(None))
     given['output_type'] = type(args[0])
     if not isinstance(args[0], types):
-        raise TypeError('Invalid input type of %s, expecting 1 of %s' % (type(args[0]), str(types)))
+        raise TypeError(f'Invalid input type of {type(args[0])}, expecting 1 of {types}')
     given['num'] = _num_parse(args[0])
     if len(args) >= 2:
         if type(args[1]) == int:
@@ -421,7 +425,7 @@ def _arguments_parse(args, kwargs):
             given[prop] = _manual_settings[prop]
         else:
             given[prop] = _default_settings[prop]
-     
+
     return given
 def _num_parse(num):
     '''Private function for use only in round()'s _arguments_parse() function:
