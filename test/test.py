@@ -9,6 +9,7 @@ Requires the following semi-colon separated CSV files:
 
 from decimal import Decimal
 from warnings import warn, filterwarnings, resetwarnings
+from inspect import currentframe, getframeinfo
 import unittest, csv
 
 from numpy import float64, float32, int64, int32, nan, isnan
@@ -68,10 +69,9 @@ class KnownWarn(unittest.TestCase):
     def runTest(self):
         with self.assertWarns(UserWarning)as warn_context:
             round(*self.args,**self.kwargs)
-        # Check that the warning is associated with the caller.
-        self.assertEqual(__file__, warn_context.filename, 'Warning not associated with test call')
-        # (BRITTLE) Need to change this if the call to round moves around.
-        self.assertEqual(69, warn_context.lineno, 'Warning not associated with test call')
+            line_number_hack = getframeinfo(currentframe()).lineno
+        self.assertEqual(__file__, warn_context.filename, 'Warning raised in wrong file')
+        self.assertEqual(line_number_hack-1, warn_context.lineno, 'Warning not getting the right line number')
         filterwarnings("ignore")
         if type(self.output) == float:
             self.assertAlmostEqual(round(*self.args, **self.kwargs), self.output)
