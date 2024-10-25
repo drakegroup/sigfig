@@ -284,6 +284,8 @@ def _arguments_parse(args, kwargs):
             if given['sigfigs'] < 1:
                 warn('cannot have less that 1 significant figure, setting to 1')
                 given['sigfigs'] = 1
+        elif args[1] != args[1]:
+            warn(f'Ignoring 2nd argument "{args[1]}". invalid uncertainty, expecting number')
         else:
             given['uncertainty'] = _num_parse(args[1])
             given['output_type'] = str
@@ -320,8 +322,12 @@ def _arguments_parse(args, kwargs):
             except:
                 warn('Ignoring %s=%s, invalid type of %s, expecting integer type' % (key, val, type(val)))
         elif key in {'uncertainty', 'u'}:
-            given['uncertainty'] = _num_parse(val)
-            given['output_type'] = str
+            try:
+                assert(val == val)
+                given['uncertainty'] = _num_parse(val)
+                given['output_type'] = str
+            except:
+                warn(f"Ignoring {key}={val}. invalid uncertainty, expecting number")
         elif key == 'prefix':
             if type(val) == bool or val in {'major', 'sci', 'eng'}:
                 given[key] = val
