@@ -291,7 +291,7 @@ def _arguments_parse(args, kwargs):
     for key in _manual_settings:
         given[key] = _manual_settings[key]
 
-    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 'decimals', 'uncertainty', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
+    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
     for key in kwargs:
         val = kwargs[key]
         if key not in keys:
@@ -300,7 +300,9 @@ def _arguments_parse(args, kwargs):
         if key in given and key not in _manual_settings:
             None
             #warn("overwriting %s=%s with %s=%s" % (key, given[key], key, val))
-        if key in {'sigfigs', 'decimals', 'cutoff', 'crop', 'spacing'}:
+        if key in {'sigfigs', 's', 'decimals', 'd', 'cutoff', 'crop'}:
+            shortcuts = {'s':'sigfigs', 'd':'decimals'}
+            key = shortcuts[key] if key in shortcuts else key
             try:
                 if key == 'crop':
                     key = 'cutoff'
@@ -309,13 +311,13 @@ def _arguments_parse(args, kwargs):
                 if key in {'cutoff', 'crop'} and int(val) < 9:
                     warn('cutoff/crop cannot be < 9, setting to 9')
                     val = 9
-                if key == 'sigfigs' and int(val) < 1:
+                if key in 'sigfigs' and int(val) < 1:
                     warn('cannot have less that 1 significant figure, setting to 1')
                     val = 1
                 given[key] = int(val)
             except:
                 warn('Ignoring %s=%s, invalid type of %s, expecting integer type' % (key, val, type(val)))
-        elif key == 'uncertainty':
+        elif key in {'uncertainty', 'u'}:
             given['uncertainty'] = _num_parse(val)
             given['output_type'] = str
         elif key == 'prefix':
@@ -329,6 +331,10 @@ def _arguments_parse(args, kwargs):
             given['output_type'] = str
         elif key in {'spacer', 'decimal'}:
             given[key] = str(val)
+            given['output_type'] = str
+        elif key == 'spacing':
+            given['spacing'] = int(val)
+            given['output_type'] = str
         elif key in {'sep', 'separation', 'separator'}:
             if val == 'external_brackets':
                 given['separator'] = 'brackets'
@@ -409,6 +415,10 @@ def _arguments_parse(args, kwargs):
         del given['arg2']
     if not issubclass(given['output_type'], (numbers.Real, Decimal, _Number)):
         given['format'] = {}
+        if 'spacer' in given and 'spacing' not in given:
+            given['spacing'] = 3
+        if 'spacing' in given and 'spacer' not in given:
+            given['spacer'] = ","
         for prop in {'decimal', 'spacer', 'spacing'}:
             if prop in given:
                 val = given[prop]

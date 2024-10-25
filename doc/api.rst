@@ -21,8 +21,8 @@ Rounding Operations
 
 Only 1 of the 3 rounding operation may be used at a time.  In the event multiple operations are requested, rounding by uncertainty will take precedence over rounding by significant figures which will take priority over rounding by number of decimals.  Selecting a rounding operation is not mandatory and can be ignored when :meth:`round` is being called strictly for formatting operations.
 
-sigfigs
--------
+sigfigs (s)
+-----------
 
 Default value: ``None``
 
@@ -33,11 +33,13 @@ Controls how many significant figures the given number is to be rounded to in ac
     >>> from sigfig import round
     >>> round(12.7654, sigfigs=4)
     12.77
+    >>> round(12.7654, s=5)
+    12.765
     >>> round(12.7654, 3)
     12.8
 
-decimals
---------
+decimals (d)
+------------
 
 Default value: ``None``
 
@@ -48,11 +50,13 @@ Controls how many decimal places (or negative ten's power) the given number is t
     >>> from sigfig import round
     >>> round(12.7654, decimals=3)
     12.765
+    >>> round(12.7654, d=1)
+    12.8
     >>> round('12.7654', decimals=-1)
     '10'
 
-uncertainty
------------
+uncertainty (u)
+---------------
 
 Default value: ``None``
 
@@ -65,6 +69,8 @@ Can be specified with ``uncertainty``/``unc`` keyword argument or by passing as 
     >>> from sigfig import round
     >>> round('3.14159', uncertainty='0.6567')
     '3.1 ± 0.7'
+    >>> round('3.14159', u='1.6567')
+    '3 ± 2'
     >>> round(3.14159, 0.001567)
     '3.142 ± 0.002'
 
