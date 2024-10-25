@@ -180,8 +180,8 @@ class _Number:
     def output(self, output_type):
         '''returns number in given type'''
         no_formatting = {'decimal': '', 'spacer': '', 'spacing': 0.1}
-        return output_type(Decimal(self.decimate(no_formatting, zeropadding=False) +\
-                                    'E' + str(self.min_power())))
+        num = self.decimate(no_formatting, zeropadding=False) or "0"
+        return output_type(f"{num}E{self.min_power()}")
     def __gt__(self, other):
         if self.max_power() > other.max_power():
             return True
