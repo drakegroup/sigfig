@@ -1,40 +1,35 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
 from decimal import Decimal
 from copy import deepcopy
-from inspect import currentframe, getfile
 from sortedcontainers import SortedDict
 from warnings import warn, filterwarnings, resetwarnings
 
 import numbers
 
-def _get_warn_stackarg(best_guess=2):
+from inspect import currentframe, getfile
+def _warn_stacklevel(best_guess=2):
     '''Helper function to associate warnings with caller outside this module.
 
     Args:
-        best_guess: stack depth estimate in case the Python interpreter doesn't support
-          stack introspection.
+        best_guess: stack depth estimate in case the Python interpreter doesn't support stack introspection.
     Returns:
-    a kwargs dict to be passed to the warn function.
+        integer stack level for warnings.warn() function.
+
+    Note:
+    - Python 3.12 should simplify this process with 'skip_file_prefixes' once the path normalization bugs are fixed.
     '''
-    # Theoretically, Python 3.12 simplifies this process with 'skip_file_prefixes'
-    # in warnings, but that didn't seem to work correctly because of path normalization
-    # bugs.
     stacklevel = 0
     try:
         frame = currentframe()
-        if frame is None:
-            return {'stacklevel': best_guess}
         while True:
             if frame is None or getfile(frame) != __file__:
-                return {'stacklevel': stacklevel}
+                return stacklevel
             frame = frame.f_back
             stacklevel += 1
     except:
-        return {'stacklevel': best_guess}
-
+        return best_guess
 
 _manual_settings = {}
 _default_settings = {
@@ -117,7 +112,7 @@ class _Number:
             self.positive = False
             self.sign = '-'
         else:
-            warn('sign must be "+" or "-", assuming positive', **_get_warn_stackarg(4))
+            warn('sign must be "+" or "-", assuming positive', stacklevel=_warn_stacklevel(4))
             self.negative = False
             self.positive = True
             self.set_sign('+')
@@ -298,8 +293,7 @@ def _arguments_parse(args, kwargs):
             resetwarnings()
         else:
             resetwarnings()
-            warn(f'warnings argument expected to be True, False, or "once". Got "{warning}"',
-                 **_get_warn_stackarg(3))
+            warn(f'warnings argument expected to be True, False, or "once". Got "{warning}"', stacklevel=_warn_stacklevel(3))
         given['reset_warnings'] = True
 
     types = (numbers.Number, str, Decimal, _Number, type(None))
@@ -311,17 +305,15 @@ def _arguments_parse(args, kwargs):
         if type(args[1]) == int:
             given['sigfigs'] = args[1]
             if given['sigfigs'] < 1:
-                warn('cannot have less that 1 significant figure, setting to 1',
-                     **_get_warn_stackarg(3))
+                warn('cannot have less that 1 significant figure, setting to 1', stacklevel=_warn_stacklevel(3))
                 given['sigfigs'] = 1
         elif args[1] != args[1]:
-            warn(f'Ignoring 2nd argument "{args[1]}". invalid uncertainty, expecting number')
+            warn(f'Ignoring 2nd argument "{args[1]}". invalid uncertainty, expecting number', stacklevel=_warn_stacklevel(3))
         else:
             given['uncertainty'] = _num_parse(args[1])
             given['output_type'] = str
     if len(args) > 2:
-        warn("last %d argument(s) discarded/ignored" % int(len(args) - 3),
-             **_get_warn_stackarg(3))
+        warn(f"last {int(len(args) - 3)} argument(s) discarded/ignored", stacklevel=_warn_stacklevel(3))
     
     for key in _manual_settings:
         given[key] = _manual_settings[key]
@@ -330,7 +322,7 @@ def _arguments_parse(args, kwargs):
     for key in kwargs:
         val = kwargs[key]
         if key not in keys:
-            warn('unregonized argument, skipping %s=%s' % (key, val), **_get_warn_stackarg(3))
+            warn(f'unrecognized argument, skipping {key}={val}', stacklevel=_warn_stacklevel(3))
             continue
         if key in given and key not in _manual_settings:
             None
@@ -342,31 +334,31 @@ def _arguments_parse(args, kwargs):
                 if key == 'crop':
                     key = 'cutoff'
                 if not isinstance(val, numbers.Integral):
-                    warn('use integer type for %s argument' % key, **_get_warn_stackarg(3))
+                    warn(f'use integer type for {key} argument', stacklevel=_warn_stacklevel(3))
                 if key in {'cutoff', 'crop'} and int(val) < 9:
-                    warn('cutoff/crop cannot be < 9, setting to 9', **_get_warn_stackarg(3))
+                    warn('cutoff/crop cannot be < 9, setting to 9', stacklevel=_warn_stacklevel(3))
                     val = 9
                 if key == 'sigfigs' and int(val) < 1:
-                    warn('cannot have less that 1 significant figure, setting to 1', **_get_warn_stackarg(3))
+                    warn('cannot have less that 1 significant figure, setting to 1', stacklevel=_warn_stacklevel(3))
                     val = 1
                 given[key] = int(val)
             except:
-                warn(f'Ignoring {key}={val}, invalid type of {type(val)}, expecting integer type', **_get_warn_stackarg(3))
+                warn(f'Ignoring {key}={val}, invalid type of {type(val)}, expecting integer type', stacklevel=_warn_stacklevel(3))
         elif key in {'uncertainty', 'u'}:
             try:
                 assert(val == val)
                 given['uncertainty'] = _num_parse(val)
                 given['output_type'] = str
             except:
-                warn(f"Ignoring {key}={val}. invalid uncertainty, expecting number")
+                warn(f"Ignoring {key}={val}. invalid uncertainty, expecting number", stacklevel=_warn_stacklevel(3))
         elif key == 'prefix':
             if type(val) == bool or val in {'major', 'sci', 'eng'}:
                 given[key] = val
             elif val in ['minor', 'all']:
                 given['prefix'] = 'all'
             else:
-                warn('Ignoring %s=%s, invalid prefix setting, expecting: %s' %
-                     (key, val, str([True, False, 'major', 'minor', 'all'])), **_get_warn_stackarg(3))
+                prefixes = { True, False, 'major', 'minor', 'sci', 'eng', 'all'}
+                warn(f"Ignoring {key}={val}, invalid prefix setting, expecting 1 of: {prefixes}", stacklevel=_warn_stacklevel(3))
                 continue
             given['output_type'] = str
         elif key in {'spacer', 'decimal'}:
@@ -432,25 +424,25 @@ def _arguments_parse(args, kwargs):
                 else:
                     given['output'] = val
             else:
-                warn("expected format of %s, ignoring format of %s" % ([f for f in formats] + [o for o in outputs], val), **_get_warn_stackarg(3))
+                warn(f"expected format of {[f for f in formats] + [o for o in outputs]}, ignoring format of {val}", stacklevel=_warn_stacklevel(3))
                 given['output_type'] = type(args[0])
         else:
             given[key] = val
 
     if 'sigfigs' in given and 'decimals' in given:
-        warn('Cannot round by both sigfigs & decimals, ignoring decimal constraint',
-             **_get_warn_stackarg(3))
+        warn('Cannot round by both sigfigs & decimals, ignoring decimal constraint', stacklevel=_warn_stacklevel(3))
         del given['decimals']
     if 'uncertainty' in given and any([x in given for x in ['sigfigs', 'decimals', 'arg2']]):
-        warn('Cannot round by both uncertainty & decimals/sigfigs simultaneously, ignoring decimals &/or sigfigs.  Use seperate calls to round() function for seperate roundings.',
-             **_get_warn_stackarg(3))
+        warn(
+            'Cannot round by both uncertainty & decimals/sigfigs simultaneously, ignoring decimals &/or sigfigs.  Use seperate calls to round() function for seperate roundings.',
+            stacklevel=_warn_stacklevel(3)
+        )
         for prop in ['sigfigs', 'decimals', 'arg2']:
             if prop in given:
                 del given[prop]
     if 'arg2' in given:
-        if 'sigfigs' or 'decimals' in given:
-            warn('Invalid 2nd argument, ignoring.  Sigfigs or decimals given in keyword arguments',
-                 **_get_warn_stackarg(3))
+        if 'sigfigs' in given or 'decimals' in given:
+            warn('Invalid 2nd argument, ignoring. "sigfigs" or "decimals" given in keyword arguments', stacklevel=_warn_stacklevel(3))
         elif _default_settings['round_by_sigfigs']:
             given['sigfigs'] = given['arg2']
         else:
@@ -501,7 +493,7 @@ def _num_parse(num):
     if type(num) == type(number):
         return deepcopy(num)
     if num is None:
-        warn('no number provided, assuming zero (0)', **_get_warn_stackarg(4))
+        warn('no number provided, assuming zero (0)', stacklevel=_warn_stacklevel(4))
         number.map[0] = 0
         number.zero = True
         return number
@@ -519,12 +511,12 @@ def _num_parse(num):
         global number, i, n
         i += 1
         if not num or num in '.-+':
-            warn('no number provided, assuming zero (0)', **_get_warn_stackarg(4))
+            warn('no number provided, assuming zero (0)', stacklevel=_warn_stacklevel(4))
             number.map[0] = 0
             number.zero = True
             return None
         elif num[0] in exponents:
-            warn('no number provided, assuming zero (0)', **_get_warn_stackarg(4))
+            warn('no number provided, assuming zero (0)', stacklevel=_warn_stacklevel(4))
             number.map[0] = 0
             number.zero = True
             D(num[1:])
@@ -538,7 +530,7 @@ def _num_parse(num):
             number.map[-n] = int(num[0])
             B(num[1:])
         else:
-            raise ValueError('invalid input Character "%s" (position %d, state A)' % (num[0], i))
+            raise ValueError(f'parsing failed: invalid input Character "{num[0]}" (position {i}, state A)')
     def B(num):
         global number, i, n
         i += 1
@@ -557,7 +549,7 @@ def _num_parse(num):
             number.map[-n] = int(num[0])
             B(num[1:])
         else:
-            raise ValueError('invalid Character "%s" (position %d, state B)' % (num[0], i))
+            raise ValueError(f'parsing failed: invalid Character "{num[0]}" (position {i}, state B)')
     def C(num):
         global number, i, n
         i += 1
@@ -570,26 +562,26 @@ def _num_parse(num):
             number.map[-n] = int(num[0])
             C(num[1:])
         else:
-            raise ValueError('invalid Character "%s" (position %d, state C)' % (num[0], i))
+            raise ValueError(f'parsing failed: invalid Character "{num[0]}" (position {i}, state C)')
     def D(num):
         global i, negative_exp, exp
         
         i += 1
         if not num:
-            warn('exponent expected but not provided', **_get_warn_stackarg(4))
+            warn('exponent expected but not provided', stacklevel=_warn_stacklevel(4))
             return None
         elif num[0] in '+-':
             if num[0] == '-':
                 negative_exp = True
             if not num[1:]:
-                warn('exponent expected but not provided', **_get_warn_stackarg(4))
+                warn('exponent expected but not provided', stacklevel=_warn_stacklevel(4))
             exp = 0
             E(num[1:])
         elif num[0] in digits:
             exp = int(num[0])
             E(num[1:])
         else:
-            raise ValueError('invalid Character "%s" (position %d, state D)' % (num[0], i))
+            raise ValueError(f'invalid Character "{num[0]}" (position {i}, state D)')
     def E(num):
         global number, i, exp
         i += 1
@@ -603,7 +595,7 @@ def _num_parse(num):
             exp = 10*exp + int(num[0])
             E(num[1:])
         else:
-            raise ValueError('invalid Character "%s" (position %d, state E)' % (num[0], i))
+            raise ValueError(f'invalid Character "{num[0]}" (position {i}, state E)')
 
     A(num)
 
@@ -635,7 +627,7 @@ def round(*args, **kwargs):
     For detailed usage instructions see https://pypi.org/project/sigfig/
     '''
     if not args:
-        warn("no input number given, nothing to return", **_get_warn_stackarg(2))
+        warn("no input number given, nothing to return", stacklevel=_warn_stacklevel(2))
         return None
     given = _arguments_parse(args, kwargs)
     num = given['num']
@@ -646,8 +638,10 @@ def round(*args, **kwargs):
         num.round_by_decimals(given['decimals'])
     elif 'sigfigs' in given:
         if given['sigfigs'] > len(num.map):
-            warn("warning: %d significant figures requested from number with only %d significant figures"
-                  % (given['sigfigs'], len(num.map)), **_get_warn_stackarg(2))
+            warn(
+                f"{given['sigfigs']} significant figures requested from number with only {len(num.map)} significant figures",
+                stacklevel=_warn_stacklevel(2)
+            )
         last_power = num.max_power() - given['sigfigs'] + 1
         num.round_by_decimals(-last_power)
         while len(num.map) > given['sigfigs']:
@@ -712,8 +706,7 @@ def round(*args, **kwargs):
 
 def roundit(*args, **kwargs):
     '''Depreciated version of round() function with limited scope'''
-    warn('Depreciated Usage: Migrate code to use round() function instead',
-          DeprecationWarning, **_get_warn_stackarg(2))
+    warn('Depreciated Usage: Migrate code to use round() function instead', DeprecationWarning, stacklevel=_warn_stacklevel(2))
     defaults = {'spacer': ' ', 'spacing': 3, 'separator': 'brackets', 'output_type' : str}
     final_parameters = defaults
     if 'form' in kwargs:
@@ -729,8 +722,7 @@ def roundit(*args, **kwargs):
     return round(*args, **final_parameters)
 def round_unc(*args, **kwargs):
     '''Depreciated version of round() function with limited scope'''
-    warn('Depreciated Usage: Migrate code to use round() function instead',
-          DeprecationWarning, **_get_warn_stackarg(2))
+    warn('Depreciated Usage: Migrate code to use round() function instead', DeprecationWarning, stacklevel=_warn_stacklevel(2))
     defaults = {'sep': tuple}
     final_parameters = defaults
     if 'form' in kwargs and kwargs['form'] == 'plusminus':
@@ -743,6 +735,5 @@ def round_unc(*args, **kwargs):
     return round(*[str(arg) for arg in args], **final_parameters)[0]
 def round_sf(number, sigfigs):
     '''Depreciated version of round() function with limited scope'''
-    warn('Depreciated Usage: Migrate code to use round() function instead',
-          DeprecationWarning, **_get_warn_stackarg(2))
+    warn('Depreciated Usage: Migrate code to use round() function instead', DeprecationWarning, stacklevel=_warn_stacklevel(2))
     return round(str(number),sigfigs=sigfigs)
