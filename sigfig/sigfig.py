@@ -54,6 +54,7 @@ class _Number:
               - i.e. 3.14 => .map = {0:3, -1: 1, -2: 4}
     Attributes/Mehtods for inspection (getting values):
         .sign:     string of either '+' or '-', denoting sign of stored number
+        .nan:      bool True/False depending on whether number is NaN
         .positive: bool True/False depending on number's sign
         .negative: bool True/False depending on number's sign
         .has_uncertainty: bool True/False depending on whether there is an associated uncertainty with this number
@@ -76,6 +77,7 @@ class _Number:
         self.has_uncertainty = False
         self.map = SortedDict()
         self.zero = False
+        self.nan = False
     def set_sign(self, sign='+'):
         '''sets the number's sign'''
         if sign == '+':
@@ -459,9 +461,13 @@ def _num_parse(num):
         return deepcopy(num)
     if num is None:
         warn('no number provided, assuming zero (0)')
-        number = _Number()
         number.map[0] = 0
         number.zero = True
+        return number
+    if num != num:
+        warn('given input is not a number (NaN)')
+        number.nan = True
+        number.map['NaN'] = num
         return number
     num = str(num)
 
@@ -593,6 +599,8 @@ def round(*args, **kwargs):
     given = _arguments_parse(args, kwargs)
     num = given['num']
 
+    if num.nan:
+        return num.map['NaN']
     if 'decimals' in given:
         num.round_by_decimals(given['decimals'])
     elif 'sigfigs' in given:
