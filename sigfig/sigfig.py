@@ -315,7 +315,7 @@ def _arguments_parse(args, kwargs):
                 if key in {'cutoff', 'crop'} and int(val) < 9:
                     warn('cutoff/crop cannot be < 9, setting to 9')
                     val = 9
-                if key in 'sigfigs' and int(val) < 1:
+                if key == 'sigfigs' and int(val) < 1:
                     warn('cannot have less that 1 significant figure, setting to 1')
                     val = 1
                 given[key] = int(val)
