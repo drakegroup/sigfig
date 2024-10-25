@@ -54,6 +54,7 @@ class _Number:
               - i.e. 3.14 => .map = {0:3, -1: 1, -2: 4}
     Attributes/Mehtods for inspection (getting values):
         .sign:     string of either '+' or '-', denoting sign of stored number
+        .nan:      bool True/False depending on whether number is NaN
         .positive: bool True/False depending on number's sign
         .negative: bool True/False depending on number's sign
         .has_uncertainty: bool True/False depending on whether there is an associated uncertainty with this number
@@ -76,6 +77,7 @@ class _Number:
         self.has_uncertainty = False
         self.map = SortedDict()
         self.zero = False
+        self.nan = False
     def set_sign(self, sign='+'):
         '''sets the number's sign'''
         if sign == '+':
@@ -177,10 +179,14 @@ class _Number:
                 elif p % format['spacing'] == 0:
                     output.append(format['spacer'])
         return ''.join(output) + units
+    @staticmethod
+    def _int(num):
+        return int(float(num))
     def output(self, output_type):
         '''returns number in given type'''
         no_formatting = {'decimal': '', 'spacer': '', 'spacing': 0.1}
         num = self.decimate(no_formatting, zeropadding=False) or "0"
+        output_type = self._int if output_type == int else output_type
         return output_type(f"{num}E{self.min_power()}")
     def __gt__(self, other):
         if self.max_power() > other.max_power():
@@ -252,7 +258,7 @@ class _Number:
 def _arguments_parse(args, kwargs):
     '''Private function for use only in round() function:
     Deciphers user intent based on given inputs along with preset defaults
-    which returns actionable and sumarized useful variables in a dict.
+    which returns actionable and summarized useful variables in a dict.
     '''
     given = {'reset_warnings': False}
 
@@ -270,7 +276,7 @@ def _arguments_parse(args, kwargs):
     types = (numbers.Number, str, Decimal, _Number, type(None))
     given['output_type'] = type(args[0])
     if not isinstance(args[0], types):
-        raise TypeError('Invalid input type of %s, expecting 1 of %s' % (type(args[0]), str(types)))
+        raise TypeError(f'Invalid input type of {type(args[0])}, expecting 1 of {types}')
     given['num'] = _num_parse(args[0])
     if len(args) >= 2:
         if type(args[1]) == int:
@@ -278,6 +284,8 @@ def _arguments_parse(args, kwargs):
             if given['sigfigs'] < 1:
                 warn('cannot have less that 1 significant figure, setting to 1')
                 given['sigfigs'] = 1
+        elif args[1] != args[1]:
+            warn(f'Ignoring 2nd argument "{args[1]}". invalid uncertainty, expecting number')
         else:
             given['uncertainty'] = _num_parse(args[1])
             given['output_type'] = str
@@ -287,7 +295,7 @@ def _arguments_parse(args, kwargs):
     for key in _manual_settings:
         given[key] = _manual_settings[key]
 
-    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 'decimals', 'uncertainty', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
+    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
     for key in kwargs:
         val = kwargs[key]
         if key not in keys:
@@ -296,7 +304,9 @@ def _arguments_parse(args, kwargs):
         if key in given and key not in _manual_settings:
             None
             #warn("overwriting %s=%s with %s=%s" % (key, given[key], key, val))
-        if key in {'sigfigs', 'decimals', 'cutoff', 'crop', 'spacing'}:
+        if key in {'sigfigs', 's', 'decimals', 'd', 'cutoff', 'crop'}:
+            shortcuts = {'s':'sigfigs', 'd':'decimals'}
+            key = shortcuts[key] if key in shortcuts else key
             try:
                 if key == 'crop':
                     key = 'cutoff'
@@ -311,9 +321,13 @@ def _arguments_parse(args, kwargs):
                 given[key] = int(val)
             except:
                 warn('Ignoring %s=%s, invalid type of %s, expecting integer type' % (key, val, type(val)))
-        elif key == 'uncertainty':
-            given['uncertainty'] = _num_parse(val)
-            given['output_type'] = str
+        elif key in {'uncertainty', 'u'}:
+            try:
+                assert(val == val)
+                given['uncertainty'] = _num_parse(val)
+                given['output_type'] = str
+            except:
+                warn(f"Ignoring {key}={val}. invalid uncertainty, expecting number")
         elif key == 'prefix':
             if type(val) == bool or val in {'major', 'sci', 'eng'}:
                 given[key] = val
@@ -325,6 +339,10 @@ def _arguments_parse(args, kwargs):
             given['output_type'] = str
         elif key in {'spacer', 'decimal'}:
             given[key] = str(val)
+            given['output_type'] = str
+        elif key == 'spacing':
+            given['spacing'] = int(val)
+            given['output_type'] = str
         elif key in {'sep', 'separation', 'separator'}:
             if val == 'external_brackets':
                 given['separator'] = 'brackets'
@@ -405,6 +423,10 @@ def _arguments_parse(args, kwargs):
         del given['arg2']
     if not issubclass(given['output_type'], (numbers.Real, Decimal, _Number)):
         given['format'] = {}
+        if 'spacer' in given and 'spacing' not in given:
+            given['spacing'] = 3
+        if 'spacing' in given and 'spacer' not in given:
+            given['spacer'] = ","
         for prop in {'decimal', 'spacer', 'spacing'}:
             if prop in given:
                 val = given[prop]
@@ -421,7 +443,7 @@ def _arguments_parse(args, kwargs):
             given[prop] = _manual_settings[prop]
         else:
             given[prop] = _default_settings[prop]
-     
+
     return given
 def _num_parse(num):
     '''Private function for use only in round()'s _arguments_parse() function:
@@ -445,9 +467,13 @@ def _num_parse(num):
         return deepcopy(num)
     if num is None:
         warn('no number provided, assuming zero (0)')
-        number = _Number()
         number.map[0] = 0
         number.zero = True
+        return number
+    if num != num:
+        warn('given input is not a number (NaN)')
+        number.nan = True
+        number.map['NaN'] = num
         return number
     num = str(num)
 
@@ -579,6 +605,8 @@ def round(*args, **kwargs):
     given = _arguments_parse(args, kwargs)
     num = given['num']
 
+    if num.nan:
+        return num.map['NaN']
     if 'decimals' in given:
         num.round_by_decimals(given['decimals'])
     elif 'sigfigs' in given:

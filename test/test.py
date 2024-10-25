@@ -11,7 +11,7 @@ from decimal import Decimal
 from warnings import warn, filterwarnings, resetwarnings
 import unittest, csv
 
-from numpy import float64, float32, int64, int32
+from numpy import float64, float32, int64, int32, nan, isnan
 
 from sys import path
 from pathlib import Path
@@ -89,6 +89,18 @@ class TestType(unittest.TestCase):
     def runTest(self):
         self.assertRaises(TypeError, round, (1,2), 1)
 
+class TestNaN(unittest.TestCase):
+    '''Tests NaN behavior for round()'''
+    def __init__(self, args, kwargs):
+        super(TestNaN, self).__init__()
+        self.args = args
+        self.kwargs = kwargs
+    def runTest(self):
+        self.assertWarns(UserWarning,round,*self.args,**self.kwargs)
+        filterwarnings("ignore")
+        assert(isnan(round(*self.args, **self.kwargs)))
+        resetwarnings()
+
 class KnownDepr(unittest.TestCase):
     '''Compares each run of round() with expected output for depreciated usages'''
     def __init__(self, func, output):
@@ -138,6 +150,8 @@ def suite():
     warn_loud_cases = cases('test_warn_unmutable.csv')
     suite.addTests(KnownWarnLoud(args, kwargs, output) for args, kwargs, output in warn_loud_cases)
     suite.addTest(TestType())
+    nan_cases = [[(nan, 1), {}], [(nan,), {'d':3}], [(nan,), {'s':4}], [(nan,), {'u':4.0}]]
+    suite.addTests(TestNaN(*case) for case in nan_cases)
     def general_cases(filename):
         with open(Path(__file__).parent / filename, newline='') as f:
             line = 0
