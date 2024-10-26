@@ -46,7 +46,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@main
         with:
-          python-version: '3.6'
+          python-version: '3.6.7'
 
       - name: Install dependencies
         run: |
