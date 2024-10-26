@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checking out branch
+        uses: actions/checkout@main
+
       - name: Install Python
         uses: actions/setup-python@main
         with:
