@@ -1,0 +1,23 @@
+name: Test sigfig with oldest supported Python version (3.6)
+on:
+  pull_request:
+
+jobs:
+  oldest_supported_version_test:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checking out branch
+        uses: actions/checkout@main
+
+      - name: Install Python
+        uses: actions/setup-python@main
+        with:
+          python-version: '3.6.7'
+
+      - name: Install dependencies
+        run: |
+          pip install numpy sortedcontainers
+
+      - name: Run tests
+        run: python test/test.py
