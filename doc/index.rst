@@ -13,6 +13,9 @@ sigfig
 .. image:: https://raw.githubusercontent.com/drakegroup/sigfig/refs/heads/master/test/coverage.svg
     :target: https://github.com/drakegroup/sigfig/actions/workflows/smoke_test.yaml
     :alt: Coverage Status
+.. image:: https://img.shields.io/pypi/dd/sigfig
+    :target: https://pypistats.org/packages/sigfig
+    :alt: Download Stats
 
 This is the :mod:`sigfig` Python package used for rounding numbers (with expected results).
 
