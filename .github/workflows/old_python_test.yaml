@@ -1,4 +1,4 @@
-name: Test sigfig with oldest supported Python version (3.6)
+name: Test with oldest supported Python version (3.6)
 on:
   pull_request:
 
@@ -16,8 +16,7 @@ jobs:
           python-version: '3.6.7'
 
       - name: Install dependencies
-        run: |
-          pip install numpy sortedcontainers
+        run: pip install numpy sortedcontainers
 
       - name: Run tests
         run: python test/test.py
