@@ -11,6 +11,8 @@ jobs:
     if: github.event.pull_request.merged || github.event_name == 'workflow_dispatch'
     
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
 
     steps:
       - name: Checking out branch
@@ -62,8 +64,3 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_TOKEN }}
-          repository-url: https://upload.pypi.org/legacy/
-          skip-existing: true
