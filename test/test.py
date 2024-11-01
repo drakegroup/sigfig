@@ -67,7 +67,7 @@ class KnownWarn(unittest.TestCase):
         self.kwargs = kwargs
         self.output = output
     def runTest(self):
-        with self.assertWarns(UserWarning)as warn_context:
+        with self.assertWarns(UserWarning) as warn_context:
             round(*self.args,**self.kwargs)
             line_number_hack = getframeinfo(currentframe()).lineno
         self.assertEqual(__file__, warn_context.filename, 'Warning raised in wrong file')
