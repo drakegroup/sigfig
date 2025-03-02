@@ -7,16 +7,17 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - name: Checking out branch
-        uses: actions/checkout@main
+      - name: Clone repo
+        uses: actions/checkout@v4
 
-      - name: Install Python
-        uses: actions/setup-python@main
+      - name: Install uv and override the python version
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: '3.6.7'
+          version: "0.6.3"
+          python-version: "3.6.7"
 
-      - name: Install dependencies
-        run: pip install numpy sortedcontainers
+      - name: Finalize virtual env
+        run: uv sync --all-groups --all-extras
 
       - name: Run tests
         run: python test/test.py

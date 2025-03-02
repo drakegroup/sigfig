@@ -7,31 +7,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checking out branch
-        uses: actions/checkout@main
+      - name: Clone repo
+        uses: actions/checkout@v4
 
-      - name: Install Python
-        uses: actions/setup-python@main
+      - name: Install uv and set the python version per the .python-version file
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
+          version: "0.6.3"
+    
+      - name: Finalize virtual env
+        run: uv sync --all-groups --all-extras
 
       - name: Run tests
         run: |
-          poetry run coverage run test/test.py
-          poetry run coverage report -m sigfig/sigfig.py
+          uv run coverage run test/test.py
+          uv run coverage report -m sigfig/sigfig.py
 
       - name: Build docs
         run: |
           cd doc
-          poetry run make html
+          uv run make html
 
       - name: Check build
         run: |
-          poetry run python ./.github/workflows/set_python_version.py "^3.6"
-          poetry run python -m build
-          poetry run twine check dist/*
+          uv run python ./.github/workflows/set_python_version.py "^3.6"
+          uv run python -m build
+          uv run twine check dist/*
