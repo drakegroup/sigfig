@@ -7,7 +7,7 @@ maintainers = [
     {name = "Michael Busuttil", email = "mike.busuttil@gmail.com"},
 ]
 license = {text = "MIT License"}
-requires-python = "<4.0,>=3.11"
+requires-python = "<4.0,>=3.8"
 dependencies = [
     "sortedcontainers<3.0.0,>=2.4.0",
 ]

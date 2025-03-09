@@ -24,7 +24,7 @@ def apply_pyproject_version(version):
     pyproject_path = Path(__file__).parent / "../../pyproject.toml"
     with open(pyproject_path, "r") as f:
         pyproject = toml.load(f)
-    pyproject["tool"]["poetry"]["version"] = str(version)
+    pyproject["project"]["version"] = str(version)
     with open(pyproject_path, "w") as f:
         f.write(toml.dumps(pyproject))
 
