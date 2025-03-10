@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 from yaml import safe_load, safe_dump
-import toml
+import tomlkit as toml
 from requests import get
 from semver import Version
 import click
