@@ -12,7 +12,7 @@ dependencies = [
     "sortedcontainers<3.0.0,>=2.4.0",
 ]
 name = "sigfig"
-version = "1.3.18"
+version = "1.3.19"
 description = "Python library for rounding numbers (with expected results)"
 readme = "README.rst"
 keywords = [
@@ -74,7 +74,7 @@ dev = [
     "semver<4.0.0,>=3.0.2",
     "pyyaml<7.0.0,>=6.0.1",
     "requests<3.0.0,>=2.31.0",
-    "toml<1.0.0,>=0.10.2",
+    "tomlkit<1.0.0,>=0.13.2",
     "numpy<2.0.0,>=1.0.0",
     "coverage<8.0.0,>=7.3.2",
     "click<9.0.0,>=8.1.7",
