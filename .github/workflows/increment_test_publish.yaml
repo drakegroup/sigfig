@@ -16,52 +16,49 @@ jobs:
       contents: write
 
     steps:
-      - name: Checking out branch
-        uses: actions/checkout@main
+      - name: Clone repo
+        uses: actions/checkout@v4
 
-      - name: Install Python
-        uses: actions/setup-python@main
+      - name: Install uv and set the python version per the .python-version file
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
+          version: "0.6.3"
+    
+      - name: Finalize virtual env
+        run: uv sync --all-groups --all-extras
 
       - name: Increment version
-        run: poetry run python ./.github/workflows/version.py --increment
+        run: uv run python ./.github/workflows/version.py --increment
 
       - name: Run tests and generate coverage badge
         run: |
-          poetry run coverage run test/test.py
-          poetry run coverage report -m sigfig/sigfig.py
+          uv run coverage run test/test.py
+          uv run coverage report -m sigfig/sigfig.py
           rm test/coverage.svg
-          poetry run coverage-badge -o test/coverage.svg
+          uv run coverage-badge -o test/coverage.svg
 
       - name: Build docs
         run: |
           cd doc
-          poetry run make html
+          uv run make html
 
       - name: Bundle for PyPI and check
         run: |
-          poetry run python -m build
-          poetry run twine check dist/*
+          uv run python -m build
+          uv run twine check dist/*
 
       - name: Commit and push changes
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git add .
-          git commit -m "increment to v$(poetry run python ./.github/workflows/version.py --get)"
+          git commit -m "increment to v$(uv run python ./.github/workflows/version.py --get)"
           git push --force
 
-      - name: Specify required Python version for PyPI metadata and re-build
+      - name: Build package
         run: |
-          poetry run python ./.github/workflows/set_python_version.py "^3.6"
-          poetry run python -m build
-          poetry run twine check dist/*
+          uv run python -m build
+          uv run twine check dist/*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

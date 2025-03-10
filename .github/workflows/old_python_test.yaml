@@ -1,4 +1,4 @@
-name: Test with oldest supported Python version (3.6)
+name: Test with oldest supported Python version (3.8)
 on:
   pull_request:
 
@@ -13,7 +13,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@main
         with:
-          python-version: '3.6.7'
+            python-version: '3.8'
 
       - name: Install dependencies
         run: pip install numpy sortedcontainers
