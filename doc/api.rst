@@ -162,6 +162,21 @@ Default value: ``''``
 
 Adds a ``spacer`` character (string) every ``spacing``'th digit.
 
+group_decimals
+--------------
+
+Default value: ``True``
+
+Controls whether ``spacer``/``spacing`` grouping also applies to the fractional part of the number, in addition to the integer part.  The default groups both sides, following the SI convention of separating digits in threes on either side of the decimal marker.  Set to ``False`` to group only the integer part -- the conventional behavior of a thousands separator.
+
+.. code:: python
+
+    >>> from sigfig import round
+    >>> round('3679.14159', spacing=3, spacer=' ')
+    '3 679.141 59'
+    >>> round('3679.14159', spacing=3, spacer=' ', group_decimals=False)
+    '3 679.14159'
+
 decimal
 -------
 

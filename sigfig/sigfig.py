@@ -35,6 +35,7 @@ _manual_settings = {}
 _default_settings = {
     'spacing': 0.1,
     'spacer': '',
+    'group_decimals': True,
     'decimal': '.',
     'separator': ' ± ',
     'cutoff': 9,
@@ -176,7 +177,7 @@ class _Number:
                     self.map = SortedDict({last_power:0})'''
     def decimate(self, format, unc=None, zeropadding=True, sign=True, units=''):
         '''
-        returns string of all digits in given format {spacing, spacer, decimal},
+        returns string of all digits in given format {spacing, spacer, decimal, group_decimals},
         with unc=_Number for embedded uncertainty, and optional leading/trailing zeros & sign
         '''
         top = self.max_power()
@@ -199,7 +200,7 @@ class _Number:
             if p != bot:
                 if p == 0:
                     output.append(format['decimal'])
-                elif p % format['spacing'] == 0:
+                elif p % format['spacing'] == 0 and (p > 0 or format.get('group_decimals', True)):
                     output.append(format['spacer'])
         return ''.join(output) + units
     @staticmethod
@@ -318,7 +319,10 @@ def _arguments_parse(args, kwargs):
     for key in _manual_settings:
         given[key] = _manual_settings[key]
 
-    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
+    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd',
+            'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'decimal', 'group_decimals',
+            'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form',
+            'crop'}
     for key in kwargs:
         val = kwargs[key]
         if key not in keys:
@@ -366,6 +370,9 @@ def _arguments_parse(args, kwargs):
             given['output_type'] = str
         elif key == 'spacing':
             given['spacing'] = int(val)
+            given['output_type'] = str
+        elif key == 'group_decimals':
+            given['group_decimals'] = bool(val)
             given['output_type'] = str
         elif key in {'sep', 'separation', 'separator'}:
             if val == 'external_brackets':
@@ -454,7 +461,7 @@ def _arguments_parse(args, kwargs):
             given['spacing'] = 3
         if 'spacing' in given and 'spacer' not in given:
             given['spacer'] = ","
-        for prop in {'decimal', 'spacer', 'spacing'}:
+        for prop in {'decimal', 'spacer', 'spacing', 'group_decimals'}:
             if prop in given:
                 val = given[prop]
                 del given[prop]
