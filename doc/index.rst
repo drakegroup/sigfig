@@ -39,7 +39,6 @@ Key Features:
 * round numbers by decimal places
 * round numbers by uncertainty/error
 * format numbers in a variety of common styles & notations
-* read in numbers of any type
 
 In-depth documentation can be found here:
 

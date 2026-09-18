@@ -7,7 +7,7 @@ Requires the following semi-colon separated CSV files:
   - test_exception.csv
 '''
 
-from decimal import Decimal
+from decimal import Decimal, Inexact, Rounded, ROUND_DOWN, localcontext
 from warnings import warn, filterwarnings, resetwarnings
 from inspect import currentframe, getframeinfo
 import unittest, csv
@@ -129,6 +129,27 @@ class KnownExcp(unittest.TestCase):
     def runTest(self):
         self.assertRaises(eval(self.result), eval(self.func_name), *self.func_args, **self.func_kwargs)
 
+class DecimalRounding(unittest.TestCase):
+    def test_decimal_context_independence(self):
+        with localcontext() as context:
+            context.prec = 2
+            context.rounding = ROUND_DOWN
+            context.Emin = -2
+            context.Emax = 2
+            context.traps[Inexact] = True
+            context.traps[Rounded] = True
+            context.clear_flags()
+            original = context.copy()
+            self.assertEqual(round('12345.675', decimals=2), '12345.68')
+            self.assertEqual(round(2.675, decimals=2), 2.68)
+            self.assertEqual(round('9.995', sigfigs=3), '10.0')
+            self.assertEqual(round('12345.6745', '0.005', sep=tuple), ('12345.675', '0.005'))
+            self.assertEqual(round('123456789.123456789', notation='sci'), '1.23456789123456789E8')
+            self.assertEqual(round('123456789.123456789', prefix=True), '123.456789123456789M')
+            for attribute in ('prec', 'rounding', 'Emin', 'Emax', 'traps', 'flags'):
+                with self.subTest(attribute=attribute):
+                    self.assertEqual(getattr(context, attribute), getattr(original, attribute))
+
 def suite():
     '''Function containing a suite of all test cases for sigfig module'''
     def cases(filename):
@@ -146,6 +167,7 @@ def suite():
                 yield case
     
     suite = unittest.TestSuite()
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(DecimalRounding))
     eq_cases = cases('test_equality.csv')
     suite.addTests(KnownGood(args, kwargs, output) for args, kwargs, output in eq_cases)
     class_cases = [[30, 3, True], [1.2, 1, True], [1.0, 1, False], [1, 1.0, False], [1, 1, False]]

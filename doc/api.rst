@@ -221,11 +221,6 @@ Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Gro
 Other "Features"
 ================
 
-order of keyword arguments
---------------------------
-
-The interface for :meth:`round` allows for conflicting keyword arguments (i.e. ``cutoff=19, cutoff=20`` or ``format='Drake', sep='+/-'``) where subsequent kwargs overwrite what comes before them.  However, this feature assumes insert-ordered :class:`dict`\ionaries which is not guaranteed until Python 3.7 (and beyond).  If you are using :mod:`sigfig` with earlier versions of Python (before 3.7) without insert-ordered :class:`dict`'s the recommended usage is to avoid conflicting keyword arguments.
-
 prefix
 ------
 
