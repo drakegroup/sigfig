@@ -7,6 +7,8 @@
 ('2.149',);{'sigfigs':0};'2'
 ('2.149', 3);{'sigfigs':'nine'};'2.15'
 (2.1, 1);{'format':'jablowski'};2.0
+(12.3,);{'markup':'unsupported'};12.3
+(12.3,);{'render':[]};12.3
 ('2.149', 3);{'decimals':2};'2.15'
 (2.1, 2.0);{'decimals':2};'2 ± 2'
 (2.1,);{'sigfigs':2, 'decimals':2};2.1

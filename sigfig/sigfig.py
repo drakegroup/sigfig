@@ -3,6 +3,7 @@
 
 from decimal import Context, Decimal, InvalidOperation, Overflow, MAX_EMAX, MIN_EMIN, ROUND_HALF_UP
 from copy import copy
+from html import escape
 from re import fullmatch
 from warnings import warn, filterwarnings, resetwarnings
 
@@ -40,6 +41,7 @@ _default_settings = {
     'cutoff': 9,
     'prefix': False,
     'exponent': 'E',
+    'markup': None,
     'round_by_sigfigs': False,
     'round_by_decimals': True,
     'given_sigfigs': 0}
@@ -155,7 +157,7 @@ class _Number:
                 self.set_sign('+')
     def decimate(self, format, unc=None, zeropadding=True, sign=True, units=''):
         '''
-        returns string of all digits in given format {spacing, spacer, decimal},
+        returns string of all digits in given format {spacing, left_spacer, right_spacer, decimal},
         with unc=_Number for embedded uncertainty, and optional leading/trailing zeros & sign
         '''
         highest_power = self.max_power()
@@ -180,7 +182,7 @@ class _Number:
                 if power == 0:
                     output.append(format['decimal'])
                 elif power % format['spacing'] == 0:
-                    output.append(format['spacer'])
+                    output.append(format['left_spacer' if power > 0 else 'right_spacer'])
         return ''.join(output) + units
     def output(self, output_type):
         '''returns number in given type'''
@@ -283,7 +285,7 @@ def _arguments_parse(args, kwargs):
     for key in _manual_settings:
         given[key] = _manual_settings[key]
 
-    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
+    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'left_spacer', 'right_spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop', 'markup', 'render'}
     for key in kwargs:
         val = kwargs[key]
         if key not in keys:
@@ -326,12 +328,23 @@ def _arguments_parse(args, kwargs):
                 warn(f"Ignoring {key}={val}, invalid prefix setting, expecting 1 of: {prefixes}", stacklevel=_warn_stacklevel(3))
                 continue
             given['output_type'] = str
-        elif key in {'spacer', 'decimal'}:
+        elif key in {'spacer', 'left_spacer', 'right_spacer', 'decimal'}:
             given[key] = str(val)
+            if key == 'spacer':
+                given['left_spacer'] = given['right_spacer'] = str(val)
             given['output_type'] = str
         elif key == 'spacing':
             given['spacing'] = int(val)
             given['output_type'] = str
+        elif key in {'markup', 'render'}:
+            markups = {'latex': 'tex', 'tex': 'tex', 'markdown': 'html',
+                       'md': 'html', 'html': 'html', 'rst': 'rst'}
+            if val is None:
+                given['markup'] = None
+            elif isinstance(val, str) and val.lower() in markups:
+                given['markup'] = markups[val.lower()]
+            else:
+                warn(f'Ignoring {key}={val}, expecting LaTeX/tex, markdown/md, rst, or HTML', stacklevel=_warn_stacklevel(3))
         elif key in {'sep', 'separation', 'separator'}:
             if val == 'external_brackets':
                 given['separator'] = 'brackets'
@@ -379,6 +392,8 @@ def _arguments_parse(args, kwargs):
                         None
                         #warn("overwriting %s=%s with %s=%s" % (prop, given[prop], prop, formats[val][i]))
                     given[prop] = formats[val][i]
+                    if prop == 'spacer':
+                        given['left_spacer'] = given['right_spacer'] = given[prop]
             elif isinstance(val, type) and issubclass(val, types):
                 given['output_type'] = val
                 if 'prefix' in given:
@@ -413,13 +428,18 @@ def _arguments_parse(args, kwargs):
         else:
             given['decimals'] = given['arg2']
         del given['arg2']
+    if given.get('markup') is not None:
+        given['output_type'] = str
     if not issubclass(given['output_type'], (numbers.Real, Decimal, _Number)):
         given['format'] = {}
-        if 'spacer' in given and 'spacing' not in given:
+        spacers = {'spacer', 'left_spacer', 'right_spacer'}
+        if spacers.intersection(given) and 'spacing' not in given:
             given['spacing'] = 3
-        if 'spacing' in given and 'spacer' not in given:
+        if 'spacing' in given and not spacers.intersection(given):
             given['spacer'] = ","
-        for prop in {'decimal', 'spacer', 'spacing'}:
+        for prop in ('left_spacer', 'right_spacer'):
+            given.setdefault(prop, given.get('spacer', _default_settings['spacer']))
+        for prop in {'decimal', 'spacer', 'left_spacer', 'right_spacer', 'spacing'}:
             if prop in given:
                 val = given[prop]
                 del given[prop]
@@ -428,7 +448,7 @@ def _arguments_parse(args, kwargs):
             else:
                 val = _default_settings[prop]
             given['format'][prop] = val
-    for prop in ['separator', 'prefix', 'exponent']:
+    for prop in ['separator', 'prefix', 'exponent', 'markup']:
         if prop in given:
             continue
         elif prop in _manual_settings:
@@ -525,6 +545,12 @@ def round(*args, **kwargs):
         power_shift = num.prefixify(given['prefix'], given['exponent'])
         if 'uncertainty' in given:
             unc.increment_power_by(power_shift)
+        if given['prefix'] in {'sci', 'eng'}:
+            exponents = {'tex': r' \times 10^{{{power}}}',
+                         'html': '×10<sup>{power}</sup>',
+                         'rst': r' × 10\ :sup:`{power}`'}
+            if given['markup'] in exponents:
+                num.prefix = exponents[given['markup']].format(power=-power_shift)
 
     if given['reset_warnings']:
         resetwarnings()
@@ -538,12 +564,19 @@ def round(*args, **kwargs):
         return num.output(given['output_type'])
     elif 'output' in given and given['output'] == 'map':
         return num
+
+    if given['markup'] == 'html':
+        for prop in ('decimal', 'left_spacer', 'right_spacer'):
+            given['format'][prop] = escape(given['format'][prop])
+        given['separator'] = escape(given['separator'])
+    elif given['markup'] == 'tex':
+        given['separator'] = given['separator'].replace('±', r'\pm')
     
+    units = num.prefix if given['prefix'] else ''
     if 'uncertainty' in given and given['separator'] == 'brackets' and unc.min_power() > 0 and 'external_brackets' not in given:
-        return num.decimate(given['format'], unc=unc)
+        return num.decimate(given['format'], unc=unc, units=units)
 
     output = num.decimate(given['format'])
-    units = num.prefix if given['prefix'] else ''
 
     if 'output' in given and given['output'] in {list, tuple}:
         if 'uncertainty' in given:

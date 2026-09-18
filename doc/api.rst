@@ -113,8 +113,8 @@ Output number format notation can be one of ``standard``/``std`` (default) for `
 .. code:: python
 
     >>> from sigfig import round
-    >>> round('3679.14159', decimals=2, notation='scientific')
-    '3.67914E3'
+    >>> round('36789.14159', decimals=2, notation='scientific')
+    '3.678914E4'
     >>> round('16248055.209', notation='eng')
     '16.248055209E6'
     >>> round('16248055.209', '19923.456', notation='eng')
@@ -140,12 +140,12 @@ Return type can be any numeric-interpreted type (i.e. :class:`decimal.Decimal`, 
 
 .. note:: Should not be used in conjunction with kwarg ``format``/``style`` or ``notation``/``form`` (since these will require :class:`str` output type).
 
-spacing
--------
+spacing, spacer, left_spacer, right_spacer
+------------------------------------------
 
 Default value: ``None``
 
-Adds a ``spacer`` character every ``spacing``'th digit.  Should be :class:`int` ≥ 1.
+Adds a ``spacer`` character every ``spacing``'th digit.  The integer-side (``left_spacer``: left of the decimal point) and fractional-side (``right_spacer``: right of the decimal point) spacing character can be independently controlled.  Should be :class:`int` ≥ 1.
 
 .. code:: python
 
@@ -154,13 +154,10 @@ Adds a ``spacer`` character every ``spacing``'th digit.  Should be :class:`int` 
     3 679.141 59
     >>> round('94916248055.209', spacing=5, spacer=',')
     '9,49162,48055.209'
-
-spacer
-------
-
-Default value: ``''``
-
-Adds a ``spacer`` character (string) every ``spacing``'th digit.
+    >>> round('94916248055.209726510', spacing=3, spacer=',', right_spacer=' ')
+    '94,916,248,055.209 726 510'
+    >>> round('94916248055.209726510', spacing=3, left_spacer='_')
+    '94_916_248_055.209726510'
 
 decimal
 -------
@@ -204,7 +201,7 @@ format (style)
 
 Default value: ``None``
 
-Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Group's <http://drake.sharcnet.ca/>`_ preferred formatting of ``cutoff=29, spacer=3, spacing=' ', separation='brackets'`` and `The Particle Data Group's <http://pdg.lbl.gov/>`_ preferred formatting of ``cutoff=35`` (see `5.3 Rounding <http://pdg.lbl.gov/2011/reviews/rpp2011-rev-rpp-intro.pdf>`_).
+Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Group's <http://drake.sharcnet.ca/>`_ preferred formatting of ``cutoff=29``, ``spacing=3``, ``spacer=' '`` , ``separation='brackets'`` and `The Particle Data Group's <http://pdg.lbl.gov/>`_ preferred formatting of ``cutoff=35`` (see `5.3 Rounding <http://pdg.lbl.gov/2011/reviews/rpp2011-rev-rpp-intro.pdf>`_).
 
 .. code:: python
 
@@ -215,6 +212,23 @@ Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Gro
     '3679990.1416 ± 0.0013'
 
 .. note:: Should not be used in conjunction with kwarg ``output_type``/``type`` or ``notation``/``form``.
+
+markup (render)
+---------------
+
+Default value: ``None``
+
+Changes the markup to allow for rendering with ``LaTeX``/``tex``, ``markdown``/``md``, ``rst``, or ``HTML`` (all are cAsE inSensItIvE).
+
+.. code:: python
+
+    >>> from sigfig import round
+    >>> round('1234.567', '12.78', notation='eng', markup='latex')
+    '1.23 \\times 10^{3} \\pm 0.01 \\times 10^{3}'
+    >>> round('4.32E5', notation='sci', render='html')
+    '4.32×10<sup>5</sup>'
+
+.. note:: LaTeX/TeX rendering does not include math-mode delimiters. Wrap the returned string in ``$...$`` for inline math or ``\[...\]`` for display math.
 
 ----
 
