@@ -218,6 +218,38 @@ Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Gro
 
 ----
 
+Rounding Modes
+==============
+
+The ``mode`` keyword controls rounding by significant figures, decimal places, or uncertainty (for both the number and its uncertainty).  The default, ``ROUND_HALF_UP``, preserves the usual behavior: round to nearest, with ties away from zero.  Invalid modes produce a warning and are ignored.
+
+All of Python's `decimal rounding modes <https://docs.python.org/3/library/decimal.html#rounding-modes>`_ can be imported from ``sigfig``:
+
+* ``ROUND_DOWN``: toward zero.
+* ``ROUND_UP``: away from zero.
+* ``ROUND_FLOOR``: toward negative infinity.
+* ``ROUND_CEILING``: toward positive infinity.
+* ``ROUND_HALF_UP``: to nearest, with ties away from zero.
+* ``ROUND_HALF_DOWN``: to nearest, with ties toward zero.
+* ``ROUND_HALF_EVEN``: to nearest, with ties to an even digit.
+* ``ROUND_05UP``: away from zero if the last digit after rounding toward zero would be 0 or 5; otherwise toward zero.
+
+.. code:: python
+
+    >>> from sigfig import round, ROUND_DOWN, ROUND_UP, ROUND_FLOOR
+    >>> round(199, sigfigs=1, mode=ROUND_DOWN)
+    100
+    >>> round(999, sigfigs=2, mode=ROUND_DOWN)
+    990
+    >>> round(121, sigfigs=2, mode=ROUND_UP)
+    130
+    >>> round(-199, sigfigs=1, mode=ROUND_DOWN)
+    -100
+    >>> round(-199, sigfigs=1, mode=ROUND_FLOOR)
+    -200
+
+----
+
 Other "Features"
 ================
 
