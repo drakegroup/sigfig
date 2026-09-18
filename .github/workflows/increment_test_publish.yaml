@@ -1,7 +1,7 @@
 name: version auto-incrementing, coverage testing, & package publishing
 on:
   workflow_dispatch:
-  pull_request:
+  pull_request_target:
     types:
       - closed
     branches: ["master"]
@@ -21,8 +21,6 @@ jobs:
 
       - name: Install uv and set the python version per the .python-version file
         uses: astral-sh/setup-uv@v4
-        with:
-          version: "0.6.3"
     
       - name: Finalize virtual env
         run: uv sync --all-groups --all-extras

@@ -7,17 +7,20 @@ Requires the following semi-colon separated CSV files:
   - test_exception.csv
 '''
 
-from decimal import Decimal
+from decimal import Decimal, Inexact, Rounded, localcontext
 from warnings import warn, filterwarnings, resetwarnings
 from inspect import currentframe, getframeinfo
+from runpy import run_path
+from unittest.mock import patch
 import unittest, csv
 
 from numpy import float64, float32, int64, int32, nan, isnan
 
-from sys import path
+from sys import path, exit
 from pathlib import Path
 path.insert(0, str(Path(__file__).parent / "../sigfig"))
 from sigfig import round, _num_parse, roundit, round_unc, round_sf
+from sigfig import ROUND_05UP, ROUND_CEILING, ROUND_DOWN, ROUND_FLOOR, ROUND_HALF_DOWN, ROUND_HALF_EVEN, ROUND_HALF_UP, ROUND_UP
 
 def function_parse(func):
     '''Comprehends string representation of function call to
@@ -129,6 +132,58 @@ class KnownExcp(unittest.TestCase):
     def runTest(self):
         self.assertRaises(eval(self.result), eval(self.func_name), *self.func_args, **self.func_kwargs)
 
+class DecimalRounding(unittest.TestCase):
+    def test_decimal_context_independence(self):
+        with localcontext() as context:
+            context.prec = 2
+            context.rounding = ROUND_DOWN
+            context.Emin = -2
+            context.Emax = 2
+            context.traps[Inexact] = True
+            context.traps[Rounded] = True
+            context.clear_flags()
+            original = context.copy()
+            self.assertEqual(round('12345.675', decimals=2), '12345.68')
+            self.assertEqual(round('12345.675', decimals=2, mode=ROUND_DOWN), '12345.67')
+            self.assertEqual(round('2.75', decimals=1, mode=ROUND_HALF_EVEN), '2.8')
+            self.assertEqual(round(2.675, decimals=2), 2.68)
+            self.assertEqual(round('9.995', sigfigs=3), '10.0')
+            self.assertEqual(round('12345.6745', '0.005', sep=tuple), ('12345.675', '0.005'))
+            self.assertEqual(round('123456789.123456789', notation='sci'), '1.23456789123456789E8')
+            self.assertEqual(round('123456789.123456789', prefix=True), '123.456789123456789M')
+            for attribute in ('prec', 'rounding', 'Emin', 'Emax', 'traps', 'flags'):
+                with self.subTest(attribute=attribute):
+                    self.assertEqual(getattr(context, attribute), getattr(original, attribute))
+
+class TestWarningFailures(unittest.TestCase):
+    def runTest(self):
+        cases = [
+            KnownWarn((2.1, 7), {}, 2.1),
+            KnownWarnLoud((2.1, 7), {}, 2.1),
+            TestNaN((nan, 1), {}),
+            KnownDepr('round_sf(2.1, 1)', '2.0'),
+        ]
+        for case in cases:
+            with self.subTest(case=type(case).__name__):
+                with patch('sigfig.warn'):
+                    result = unittest.TestResult()
+                    case.run(result)
+                self.assertEqual(len(result.failures), 1)
+                self.assertEqual(result.errors, [])
+                self.assertIn('Warning not triggered', result.failures[0][1])
+
+class TestRunner(unittest.TestCase):
+    def runTest(self):
+        for outcome in ('success', 'failures', 'errors'):
+            with self.subTest(outcome=outcome):
+                result = unittest.TestResult()
+                if outcome != 'success':
+                    getattr(result, outcome).append((self, 'expected ' + outcome))
+                with patch.object(unittest.TextTestRunner, 'run', return_value=result):
+                    with self.assertRaises(SystemExit) as context:
+                        run_path(__file__, run_name='__main__')
+                self.assertEqual(context.exception.code, 0 if outcome == 'success' else 1)
+
 def suite():
     '''Function containing a suite of all test cases for sigfig module'''
     def cases(filename):
@@ -146,6 +201,9 @@ def suite():
                 yield case
     
     suite = unittest.TestSuite()
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(DecimalRounding))
+    suite.addTest(TestWarningFailures())
+    suite.addTest(TestRunner())
     eq_cases = cases('test_equality.csv')
     suite.addTests(KnownGood(args, kwargs, output) for args, kwargs, output in eq_cases)
     class_cases = [[30, 3, True], [1.2, 1, True], [1.0, 1, False], [1, 1.0, False], [1, 1, False]]
@@ -180,4 +238,4 @@ def suite():
     return suite
 
 if __name__ == '__main__':
-    unittest.TextTestRunner().run(suite())
+    exit(not unittest.TextTestRunner().run(suite()).wasSuccessful())

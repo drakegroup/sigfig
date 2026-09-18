@@ -1,9 +1,10 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from decimal import Decimal
-from copy import deepcopy
-from sortedcontainers import SortedDict
+from decimal import Context, Decimal, InvalidOperation, Overflow, MAX_EMAX, MIN_EMIN, ROUND_05UP, ROUND_CEILING, ROUND_DOWN, ROUND_FLOOR, ROUND_HALF_DOWN, ROUND_HALF_EVEN, ROUND_HALF_UP, ROUND_UP
+from copy import copy
+from html import escape
+from re import fullmatch
 from warnings import warn, filterwarnings, resetwarnings
 
 import numbers
@@ -40,6 +41,8 @@ _default_settings = {
     'cutoff': 9,
     'prefix': False,
     'exponent': 'E',
+    'markup': None,
+    'mode': ROUND_HALF_UP,
     'round_by_sigfigs': False,
     'round_by_decimals': True,
     'given_sigfigs': 0}
@@ -72,9 +75,9 @@ class _Number:
     Private data structure for storing & manipulating numbers
 
     Attributes:
-        .map: - dict for number storage
-              - maps 10's power (key) to numeric value (value)
-              - i.e. 3.14 => .map = {0:3, -1: 1, -2: 4}
+        .value: Decimal holding the number and its significant trailing zeros
+        ._exponent: lowest stored power of ten, without extracting Decimal digits
+        ._zero_power: highest displayed power of ten for zero
     Attributes/Mehtods for inspection (getting values):
         .sign:     string of either '+' or '-', denoting sign of stored number
         .nan:      bool True/False depending on whether number is NaN
@@ -90,97 +93,76 @@ class _Number:
     Methods for manipulation (changing the value):
         .set_sign(str): function used to change/set the number's sign by passing '-' or '+'
                         so that .positive, .negative, .sign don't need manual updating
-        .increment_power_by(int): (de)increments all keys in .map by given value
+        .increment_power_by(int): shifts the Decimal exponent by the given value
         .round_by_decimals(int):  performs rounding operation to the given 10's power
         .prefixify(str):          converts to Scientific or Engineering notation with optional SI prefix
     '''
-    def __init__(self):
-        self.set_sign('+')
+    def __init__(self, value=Decimal(0), exponent=0):
+        self.value = value
+        self._exponent = exponent
+        self._zero_power = 0
         self.prefix = ''
         self.has_uncertainty = False
-        self.map = SortedDict()
-        self.zero = False
-        self.nan = False
+    @property
+    def negative(self):
+        return self.value.is_signed()
+    @property
+    def positive(self):
+        return not self.negative
+    @property
+    def sign(self):
+        return '-' if self.negative else '+'
+    @property
+    def zero(self):
+        return self.value.is_zero()
+    @property
+    def nan(self):
+        return self.value.is_nan()
+    @property
+    def sigfigs(self):
+        return self.max_power() - self.min_power() + 1
     def set_sign(self, sign='+'):
         '''sets the number's sign'''
-        if sign == '+':
-            self.negative = False
-            self.positive = True
-            self.sign = '+'
-        elif sign == '-':
-            self.negative = True
-            self.positive = False
-            self.sign = '-'
-        else:
+        if sign not in ('+', '-'):
             warn('sign must be "+" or "-", assuming positive', stacklevel=_warn_stacklevel(4))
-            self.negative = False
-            self.positive = True
-            self.set_sign('+')
+            sign = '+'
+        self.value = self.value.copy_abs()
+        if sign == '-':
+            self.value = self.value.copy_negate()
     def max_power(self):
         '''returns integer corresponding to number's highest populated 10's power'''
-        return max(self.map)
+        return self._zero_power if self.zero else self.value.adjusted()
     def min_power(self):
         '''returns integer corresponding to number's lowest populated 10's power'''
-        return min(self.map)
-    def increment_power_by(self, n):
-        '''(de)increments all keys in .map'''
-        tmp = SortedDict()
-        for key in self.map:
-            tmp[key + n] = self.map[key]
-        self.map = tmp
-    def round_by_decimals(self, decimals):
+        return self._exponent
+    @staticmethod
+    def _context(precision):
+        return Context(prec=max(1, precision), rounding=ROUND_HALF_UP, Emin=MIN_EMIN, Emax=MAX_EMAX, clamp=0, traps=[InvalidOperation, Overflow])
+    def increment_power_by(self, power):
+        '''shifts the number by an exact power of ten'''
+        self.value = self.value.scaleb(power, context=self._context(self.sigfigs))
+        self._exponent += power
+        self._zero_power += power
+    def round_by_decimals(self, decimals, mode=ROUND_HALF_UP):
         '''performs rounding operation to the given 10's power'''
-        last_power = -decimals
-        tmp_map = SortedDict({self.max_power(): 0})
-        tmp_map = SortedDict({last_power: 0})
-        last_tmp_power = self.max_power()
-        for key in range(self.max_power(), min(-decimals - 1, -1), -1):
-            if key < last_power and key >= 0 or key not in self.map:
-                float(0)
-            #if key < last_power and key < 0:
-            #    Decimal(3)
-            #    continue
-            else:
-                last_tmp_power = key
-                tmp_map[key] = self.map[key]
-        if last_power == self.max_power() + 1:
-            if self.map[self.max_power()] >= 5:
-                tmp_map[last_power] = 1
-            else:
-                self.zero = True
-                tmp_map = SortedDict({last_power:0})
+        last_power = -int(decimals)
+        highest_power = self.max_power()
+        self.value = self.value.quantize(Decimal((0, (1,), last_power)), rounding=mode, context=self._context(highest_power - last_power + 2))
+        self._exponent = last_power
+        if self.zero:
+            self._zero_power = max(highest_power, last_power)
+            if last_power > highest_power:
                 self.set_sign('+')
-        elif last_power > self.max_power():
-            self.zero = True
-            tmp_map = SortedDict({last_power:0})
-            self.set_sign('+')
-        elif last_tmp_power - 1 in self.map and self.map[last_tmp_power - 1] >= 5:
-            tmp_map[last_tmp_power] += 1
-            tmp_power = last_tmp_power
-            while tmp_map[tmp_power] == 10:
-                tmp_map[tmp_power] = 0
-                tmp_power += 1
-                if tmp_power not in tmp_map:
-                    tmp_map[tmp_power] = 1
-                else:
-                    tmp_map[tmp_power] += 1
-        self.map = tmp_map
-        '''if self.map == SortedDict({0:0}):
-            self.zero = True
-            self.set_sign('+')
-            if self.has_uncertainty:
-                if last_power < 0:
-                    for p in range(-1, last_power - 1, -1):
-                        self.map[p] = 0
-                elif last_power > 0:
-                    self.map = SortedDict({last_power:0})'''
     def decimate(self, format, unc=None, zeropadding=True, sign=True, units=''):
         '''
-        returns string of all digits in given format {spacing, spacer, decimal},
+        returns string of all digits in given format {spacing, left_spacer, right_spacer, decimal},
         with unc=_Number for embedded uncertainty, and optional leading/trailing zeros & sign
         '''
-        top = self.max_power()
-        bot = self.min_power()
+        highest_power = self.max_power()
+        lowest_power = self.min_power()
+        digits = self.value.as_tuple().digits
+        top = highest_power
+        bot = lowest_power
         if zeropadding:
             top = max(top, 0)
             bot = min(bot, 0)
@@ -189,43 +171,26 @@ class _Number:
         output = []
         if sign and self.negative:
             output.append('-')
-        for p in range(top, bot - 1, -1):
-            try:
-                output.append(str(self.map[p]))
-            except:
-                output.append('0')
-            if p == self.min_power() and unc:
+        for power in range(top, bot - 1, -1):
+            index = highest_power - power
+            output.append(str(digits[index]) if 0 <= index < len(digits) else '0')
+            if power == lowest_power and unc:
                 output.append('('+unc.decimate(format, zeropadding=False, sign=False)+')')
-            if p != bot:
-                if p == 0:
+            if power != bot:
+                if power == 0:
                     output.append(format['decimal'])
-                elif p % format['spacing'] == 0:
-                    output.append(format['spacer'])
+                elif power % format['spacing'] == 0:
+                    output.append(format['left_spacer' if power > 0 else 'right_spacer'])
         return ''.join(output) + units
-    @staticmethod
-    def _int(num):
-        return int(float(num))
     def output(self, output_type):
         '''returns number in given type'''
-        no_formatting = {'decimal': '', 'spacer': '', 'spacing': 0.1}
-        num = self.decimate(no_formatting, zeropadding=False) or "0"
-        output_type = self._int if output_type == int else output_type
-        return output_type(f"{num}E{self.min_power()}")
+        if output_type in (Decimal, int, float):
+            return output_type(self.value)
+        if issubclass(output_type, numbers.Integral):
+            return output_type(int(self.value))
+        return output_type(str(self.value))
     def __gt__(self, other):
-        if self.max_power() > other.max_power():
-            return True
-        for p in range(self.max_power(), self.min_power() - 1, -1):
-            if p not in other.map:
-                if not self.map[p]:
-                    continue
-                return True
-            if self.map[p] > other.map[p]:
-                return True
-            if self.map[p] < other.map[p]:
-                return False
-        if other.min_power() > self.min_power():
-            return False
-        return False
+        return self.value.copy_abs() > other.value.copy_abs()
     def prefixify(self, prefix, exponent):
         '''converts to Engineering/Scientific notation with optional SI prefix'''
         #self.prefix = 'XXX'
@@ -248,7 +213,7 @@ class _Number:
             power_shift += -p
             return power_shift
         elif prefix in ['all', 'minor']:
-            prefixes = SortedDict(_major_prefixes+_minor_prefixes)
+            prefixes = {**_major_prefixes, **_minor_prefixes}
             p = self.min_power()
             while p >= min(prefixes):
                 if p in prefixes:
@@ -318,7 +283,7 @@ def _arguments_parse(args, kwargs):
     for key in _manual_settings:
         given[key] = _manual_settings[key]
 
-    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
+    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'left_spacer', 'right_spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop', 'markup', 'render', 'mode', 'policy'}
     for key in kwargs:
         val = kwargs[key]
         if key not in keys:
@@ -361,12 +326,25 @@ def _arguments_parse(args, kwargs):
                 warn(f"Ignoring {key}={val}, invalid prefix setting, expecting 1 of: {prefixes}", stacklevel=_warn_stacklevel(3))
                 continue
             given['output_type'] = str
-        elif key in {'spacer', 'decimal'}:
+        elif key in {'spacer', 'left_spacer', 'right_spacer', 'decimal'}:
             given[key] = str(val)
+            if key == 'spacer':
+                given['left_spacer'] = given['right_spacer'] = str(val)
             given['output_type'] = str
         elif key == 'spacing':
             given['spacing'] = int(val)
             given['output_type'] = str
+        elif key in {'mode', 'policy'}:
+            given['mode'] = val
+        elif key in {'markup', 'render'}:
+            markups = {'latex': 'tex', 'tex': 'tex', 'markdown': 'html',
+                       'md': 'html', 'html': 'html', 'rst': 'rst'}
+            if val is None:
+                given['markup'] = None
+            elif isinstance(val, str) and val.lower() in markups:
+                given['markup'] = markups[val.lower()]
+            else:
+                warn(f'Ignoring {key}={val}, expecting LaTeX/tex, markdown/md, rst, or HTML', stacklevel=_warn_stacklevel(3))
         elif key in {'sep', 'separation', 'separator'}:
             if val == 'external_brackets':
                 given['separator'] = 'brackets'
@@ -414,6 +392,8 @@ def _arguments_parse(args, kwargs):
                         None
                         #warn("overwriting %s=%s with %s=%s" % (prop, given[prop], prop, formats[val][i]))
                     given[prop] = formats[val][i]
+                    if prop == 'spacer':
+                        given['left_spacer'] = given['right_spacer'] = given[prop]
             elif isinstance(val, type) and issubclass(val, types):
                 given['output_type'] = val
                 if 'prefix' in given:
@@ -448,13 +428,18 @@ def _arguments_parse(args, kwargs):
         else:
             given['decimals'] = given['arg2']
         del given['arg2']
+    if given.get('markup') is not None:
+        given['output_type'] = str
     if not issubclass(given['output_type'], (numbers.Real, Decimal, _Number)):
         given['format'] = {}
-        if 'spacer' in given and 'spacing' not in given:
+        spacers = {'spacer', 'left_spacer', 'right_spacer'}
+        if spacers.intersection(given) and 'spacing' not in given:
             given['spacing'] = 3
-        if 'spacing' in given and 'spacer' not in given:
+        if 'spacing' in given and not spacers.intersection(given):
             given['spacer'] = ","
-        for prop in {'decimal', 'spacer', 'spacing'}:
+        for prop in ('left_spacer', 'right_spacer'):
+            given.setdefault(prop, given.get('spacer', _default_settings['spacer']))
+        for prop in {'decimal', 'spacer', 'left_spacer', 'right_spacer', 'spacing'}:
             if prop in given:
                 val = given[prop]
                 del given[prop]
@@ -463,7 +448,7 @@ def _arguments_parse(args, kwargs):
             else:
                 val = _default_settings[prop]
             given['format'][prop] = val
-    for prop in ['separator', 'prefix', 'exponent']:
+    for prop in ['separator', 'prefix', 'exponent', 'markup', 'mode']:
         if prop in given:
             continue
         elif prop in _manual_settings:
@@ -473,142 +458,36 @@ def _arguments_parse(args, kwargs):
 
     return given
 def _num_parse(num):
-    '''Private function for use only in round()'s _arguments_parse() function:
-    Translates given number of any type into returned _Number data structure
-
-    Parsing Algorythm [O(N)]:
-    - convert to string
-    - characters are analyzed sequentially in a KMP-like state graph. ie:
-       number: -325.7854E-5 
-       state:  ABBBBCCCCDEE
-    - ValueError is raised if input number cannot be deciphered
-    '''
-    global number, i, n, negative_exp, exp
-    number = _Number()
-    i = 0
-    n = 0
-    negative_exp = False
-    exp = 0
-
-    if type(num) == type(number):
-        return deepcopy(num)
+    '''Parses decimal text and legacy exponent markers into a Decimal-backed _Number.'''
+    if isinstance(num, _Number):
+        return copy(num)
     if num is None:
         warn('no number provided, assuming zero (0)', stacklevel=_warn_stacklevel(4))
-        number.map[0] = 0
-        number.zero = True
-        return number
+        return _Number()
     if num != num:
         warn('given input is not a number (NaN)')
-        number.nan = True
-        number.map['NaN'] = num
+        number = _Number(num if isinstance(num, Decimal) else Decimal('NaN'))
+        number._nan_input = num
         return number
-    num = str(num)
-
-    digits = set([str(a) for a in range(10)])
-    exponents = set(['E', 'e', 'D', 'd', 'Q', 'q'])
-
-    def A(num):
-        global number, i, n
-        i += 1
-        if not num or num in '.-+':
-            warn('no number provided, assuming zero (0)', stacklevel=_warn_stacklevel(4))
-            number.map[0] = 0
-            number.zero = True
-            return None
-        elif num[0] in exponents:
-            warn('no number provided, assuming zero (0)', stacklevel=_warn_stacklevel(4))
-            number.map[0] = 0
-            number.zero = True
-            D(num[1:])
-        elif num[0] in '+-':
-            number.set_sign(num[0])
-            B(num[1:])
-        elif num[0] in '.':
-            C(num[1:])
-        elif num[0] in digits:
-            n += 1
-            number.map[-n] = int(num[0])
-            B(num[1:])
-        else:
-            raise ValueError(f'parsing failed: invalid input Character "{num[0]}" (position {i}, state A)')
-    def B(num):
-        global number, i, n
-        i += 1
-        if not num:
-            number.increment_power_by(n)
-            return None
-        elif num[0] in exponents:
-            number.increment_power_by(n)
-            D(num[1:])
-        elif num[0] in '.':
-            number.increment_power_by(n)
-            n = 0
-            C(num[1:])
-        elif num[0] in digits:
-            n += 1
-            number.map[-n] = int(num[0])
-            B(num[1:])
-        else:
-            raise ValueError(f'parsing failed: invalid Character "{num[0]}" (position {i}, state B)')
-    def C(num):
-        global number, i, n
-        i += 1
-        if not num:
-            return None
-        elif num[0] in exponents:
-            D(num[1:])
-        elif num[0] in digits:
-            n += 1
-            number.map[-n] = int(num[0])
-            C(num[1:])
-        else:
-            raise ValueError(f'parsing failed: invalid Character "{num[0]}" (position {i}, state C)')
-    def D(num):
-        global i, negative_exp, exp
-        
-        i += 1
-        if not num:
-            warn('exponent expected but not provided', stacklevel=_warn_stacklevel(4))
-            return None
-        elif num[0] in '+-':
-            if num[0] == '-':
-                negative_exp = True
-            if not num[1:]:
-                warn('exponent expected but not provided', stacklevel=_warn_stacklevel(4))
-            exp = 0
-            E(num[1:])
-        elif num[0] in digits:
-            exp = int(num[0])
-            E(num[1:])
-        else:
-            raise ValueError(f'invalid Character "{num[0]}" (position {i}, state D)')
-    def E(num):
-        global number, i, exp
-        i += 1
-        if not num:
-            sign = 1
-            if negative_exp:
-                sign = -1
-            number.increment_power_by(sign*exp)
-            return None
-        elif num[0] in digits:
-            exp = 10*exp + int(num[0])
-            E(num[1:])
-        else:
-            raise ValueError(f'invalid Character "{num[0]}" (position {i}, state E)')
-
-    A(num)
-
-    p = number.max_power()
-    while p in number.map and number.map[p] == 0:
-        del number.map[p]
-        p -= 1
-
-    if not number.map:
-        number.map[0] = 0
-        number.zero = True
-
-    return number
+    text = str(num)
+    if text in ('', '.', '+', '-'):
+        warn('no number provided, assuming zero (0)', stacklevel=_warn_stacklevel(4))
+        return _Number()
+    match = fullmatch(r'([+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+))?(?:[EeDdQq]([+-]?[0-9]*))?', text)
+    if match is None:
+        raise ValueError(f'parsing failed: invalid number {text!r}')
+    coefficient, exponent = match.groups()
+    if coefficient is None:
+        warn('no number provided, assuming zero (0)', stacklevel=_warn_stacklevel(4))
+        coefficient = '0'
+    if exponent in ('', '+', '-'):
+        warn('exponent expected but not provided', stacklevel=_warn_stacklevel(4))
+        exponent = '0'
+    power = int(exponent or '0')
+    value = num if isinstance(num, Decimal) else Decimal(coefficient + 'E' + str(power))
+    if value.is_zero():
+        return _Number(Decimal(0).copy_sign(value))
+    return _Number(value, power - len(coefficient.partition('.')[2]))
 
 def round(*args, **kwargs):
     '''
@@ -631,21 +510,22 @@ def round(*args, **kwargs):
         return None
     given = _arguments_parse(args, kwargs)
     num = given['num']
+    mode = given['mode']
 
     if num.nan:
-        return num.map['NaN']
+        return getattr(num, '_nan_input', num.value)
     if 'decimals' in given:
-        num.round_by_decimals(given['decimals'])
+        num.round_by_decimals(given['decimals'], mode=mode)
     elif 'sigfigs' in given:
-        if given['sigfigs'] > len(num.map):
+        if given['sigfigs'] > num.sigfigs:
             warn(
-                f"{given['sigfigs']} significant figures requested from number with only {len(num.map)} significant figures",
+                f"{given['sigfigs']} significant figures requested from number with only {num.sigfigs} significant figures",
                 stacklevel=_warn_stacklevel(2)
             )
         last_power = num.max_power() - given['sigfigs'] + 1
-        num.round_by_decimals(-last_power)
-        while len(num.map) > given['sigfigs']:
-            del num.map[num.min_power()]
+        num.round_by_decimals(-last_power, mode=mode)
+        if num.sigfigs > given['sigfigs']:
+            num.round_by_decimals(given['sigfigs'] - num.max_power() - 1, mode=mode)
     elif 'uncertainty' in given:
         num.has_uncertainty = True
         if 'cutoff' in given:
@@ -654,18 +534,24 @@ def round(*args, **kwargs):
             cutoff = str(_manual_settings['cutoff'])
         else:
             cutoff = str(_default_settings['cutoff'])
-        unc = round(given['uncertainty'], sigfigs=len(cutoff), output='map')
+        unc = round(given['uncertainty'], sigfigs=len(cutoff), output='map', mode=mode)
         cut = _num_parse(cutoff + 'E' + str(unc.min_power()))
         if unc > cut:
-            unc = round(given['uncertainty'], sigfigs=len(cutoff)-1, output='map')
-            if unc.map[unc.max_power()] == 1:
-                unc.map[unc.max_power() - 1] = 0
-        num.round_by_decimals(-unc.min_power())
+            unc = round(given['uncertainty'], sigfigs=len(cutoff)-1, output='map', mode=mode)
+            if not unc.zero and unc.value.copy_abs() < Decimal((0, (2,), unc.max_power())):
+                unc.round_by_decimals(1 - unc.max_power(), mode=mode)
+        num.round_by_decimals(-unc.min_power(), mode=mode)
 
     if given['prefix']:
         power_shift = num.prefixify(given['prefix'], given['exponent'])
         if 'uncertainty' in given:
             unc.increment_power_by(power_shift)
+        if given['prefix'] in {'sci', 'eng'}:
+            exponents = {'tex': r' \times 10^{{{power}}}',
+                         'html': '×10<sup>{power}</sup>',
+                         'rst': r' × 10\ :sup:`{power}`'}
+            if given['markup'] in exponents:
+                num.prefix = exponents[given['markup']].format(power=-power_shift)
 
     if given['reset_warnings']:
         resetwarnings()
@@ -679,12 +565,19 @@ def round(*args, **kwargs):
         return num.output(given['output_type'])
     elif 'output' in given and given['output'] == 'map':
         return num
+
+    if given['markup'] == 'html':
+        for prop in ('decimal', 'left_spacer', 'right_spacer'):
+            given['format'][prop] = escape(given['format'][prop])
+        given['separator'] = escape(given['separator'])
+    elif given['markup'] == 'tex':
+        given['separator'] = given['separator'].replace('±', r'\pm')
     
+    units = num.prefix if given['prefix'] else ''
     if 'uncertainty' in given and given['separator'] == 'brackets' and unc.min_power() > 0 and 'external_brackets' not in given:
-        return num.decimate(given['format'], unc=unc)
+        return num.decimate(given['format'], unc=unc, units=units)
 
     output = num.decimate(given['format'])
-    units = num.prefix if given['prefix'] else ''
 
     if 'output' in given and given['output'] in {list, tuple}:
         if 'uncertainty' in given:

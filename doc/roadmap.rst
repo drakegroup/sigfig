@@ -8,6 +8,7 @@ This project was created to add needed features to Python's built-in :func:`roun
 Namely:
 
     - the ability to consistently round floating point numbers despite `float's inherent lack of precision <https://docs.python.org/3/tutorial/floatingpoint.html>`_.
+    - the ability to always `round up for numbers ending with 5 <https://docs.python.org/3/library/decimal.html#decimal.ROUND_HALF_UP>`_ (instead of the built-in `banker's rounding <https://docs.python.org/3/library/decimal.html#decimal.ROUND_HALF_EVEN>`_).
     - the ability to round a number by number of significant figures/digits instead of by decimal places only.
     - the ability to round a number by its associated uncertainty.
 
@@ -25,13 +26,8 @@ The Ultimate goal of the project is to add the included rounding features to the
 Separate out formatting code
 ############################
 
-The code for formatting the resultant rounded number string does not belong in the standard library's :func:`round` function but would make more sense as either it's own package, as part of the :mod:`numpy <https://pypi.org/project/numpy/>` package (ie. the :func:`format_float_positional` `function <https://docs.scipy.org/doc/numpy/reference/generated/numpy.format_float_positional.html>`_), or as part of another package involving numeric or data visualization.
+The code for formatting the resultant rounded number string does not belong in the standard library's :func:`round` function but would make more sense as either its own package, as part of the :mod:`numpy <https://pypi.org/project/numpy/>` package (ie. the :func:`format_float_positional` `function <https://docs.scipy.org/doc/numpy/reference/generated/numpy.format_float_positional.html>`_), or as part of another package involving numeric or data visualization.
 This will have the added benefit of making :mod:`sigfig`'s code more readable which is never a bad thing.
-
-Increase numeric storage efficiency and standardization
-#######################################################
-
-:mod:`sigfig` currently parses numbers by first converting to string and then storing in a {<ten's power>:<numeric value>} dict (see :class:`_Number` in `source <github/sigfig/sigfig.py>`_ for technical details).  While this guarantees bug-free functionality for all numbers and is suitable for numbers already stored as strings, this lacks efficiency for :class:`decimal.Decimal` and :class:`float`.  Numeric values could possibly be stored instead using the same storage technique employed by the :class:`decimal.Decimal` package (after an investigation of that technique to ensure full code coverage).  This should fully satisfy the :class:`decimal.Decimal` case whereas the :class:`float` case can be handled as-is by default but allowed to optionally (with ``high_speed=True`` instead of the default ``high_accuracy=True``) use floating point arithmetic when speed trumps accuracy.
 
 Interface Overhaul
 ##################
@@ -112,7 +108,8 @@ Clone the repo and configure your environment:
 
     $ git clone https://github.com/drakegroup/sigfig.git
     $ cd sigfig
-    $ curl -sSL https://install.python-poetry.org | python3 -
+    $ curl -LsSf https://astral.sh/uv/install.sh | sh
+    $ uv sync
 
 1. Fork the repository on GitHub.
 2. Clone your fork locally.
@@ -129,8 +126,8 @@ All new features should be accompanied by tests.  To run the tests and view the 
 
 .. code:: bash
 
-    $ coverage run test/test.py
-    $ coverage report -m sigfig/sigfig.py
+    $ uv run coverage run test/test.py
+    $ uv run coverage report -m sigfig/sigfig.py
 
 Style
 #####
@@ -153,6 +150,6 @@ To build the documentation locally:
 .. code:: bash
 
     $ cd doc
-    $ make html
+    $ uv run make html
 
 Then open the file ``doc/_build/html/index.html`` in your browser.

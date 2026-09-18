@@ -77,7 +77,7 @@ Can be specified with ``uncertainty``/``unc`` keyword argument or by passing as 
 Uncertainty Rounding Rules
 ==========================
 
-A number's uncertainty or error is a measure of how accurate that number is.  Consequently, the uncertainty's order of magnitude (aka number of decimals) is of greater importance than it's value resulting in the uncertainty usually being displayed with only 1 significant figure so as to not distract from it's associated number.  However, many of those in the scientific community will give 2 figures of uncertainty if the uncertainty begins with a 1 or 2.  One prominent research group (The Particle Data Group) rounds their measured uncertainties to 2 decimal places if they begin with 35 (after being rounded) and will round to 1 decimal place if they begin with 36 or higher.  This behavior is modified through the ``cutoff`` keyword argument which will always round to 1 decimal place in the event of ``cutoff=9``, round to 2 decimal places if the uncertainty begins with a 1 or 2 with ``cutoff=29`` (numbers beginning with 3-9 will be rounded to 1 decimal), and The Particle Data Group's preference sets ``cutoff=35``.
+A number's uncertainty or error is a measure of how accurate that number is.  Consequently, the uncertainty's order of magnitude (aka number of decimals) is of greater importance than its value resulting in the uncertainty usually being displayed with only 1 significant figure so as to not distract from its associated number.  However, many of those in the scientific community will give 2 figures of uncertainty if the uncertainty begins with a 1 or 2.  One prominent research group (The Particle Data Group) rounds their measured uncertainties to 2 decimal places if they begin with 35 (after being rounded) and will round to 1 decimal place if they begin with 36 or higher.  This behavior is modified through the ``cutoff`` keyword argument which will always round to 1 decimal place in the event of ``cutoff=9``, round to 2 decimal places if the uncertainty begins with a 1 or 2 with ``cutoff=29`` (numbers beginning with 3-9 will be rounded to 1 decimal), and The Particle Data Group's preference sets ``cutoff=35``.
 
 Following the rounding of the uncertainty, the given number (not uncertainty) will be rounded to the smallest magnitude of the resulting rounded uncertainty.  After all it would be confusing (or even misleading) to state a number with 6 decimals of accuracy when you're uncertain of any digit beyond the first decimal point.
 
@@ -98,6 +98,22 @@ The uncertainty magnitude value (:class:`int` ≥ 9) after which the uncertainty
     >>> round('3.14159', '0.6567', crop=77)
     '3.14 ± 0.66'
 
+mode (policy)
+-------------
+
+Default Value: ``ROUND_HALF_UP``
+
+Sets the `rounding policy <https://docs.python.org/3/library/decimal.html#rounding-modes>`_ for both the number and its uncertainty.
+
+.. code:: python
+
+    >>> from sigfig import round, ROUND_DOWN, ROUND_CEILING
+    >>> round(999, sigfigs=2, mode=ROUND_DOWN)
+    990
+    >>> round('-1.5', s=1, policy=ROUND_CEILING)
+    '-1'
+
+
 ----
 
 Formatting Output
@@ -113,8 +129,8 @@ Output number format notation can be one of ``standard``/``std`` (default) for `
 .. code:: python
 
     >>> from sigfig import round
-    >>> round('3679.14159', decimals=2, notation='scientific')
-    '3.67914E3'
+    >>> round('36789.14159', decimals=2, notation='scientific')
+    '3.678914E4'
     >>> round('16248055.209', notation='eng')
     '16.248055209E6'
     >>> round('16248055.209', '19923.456', notation='eng')
@@ -140,12 +156,12 @@ Return type can be any numeric-interpreted type (i.e. :class:`decimal.Decimal`, 
 
 .. note:: Should not be used in conjunction with kwarg ``format``/``style`` or ``notation``/``form`` (since these will require :class:`str` output type).
 
-spacing
--------
+spacing, spacer, left_spacer, right_spacer
+------------------------------------------
 
 Default value: ``None``
 
-Adds a ``spacer`` character every ``spacing``'th digit.  Should be :class:`int` ≥ 1.
+Adds a ``spacer`` character every ``spacing``'th digit.  The integer-side (``left_spacer``: left of the decimal point) and fractional-side (``right_spacer``: right of the decimal point) spacing character can be independently controlled.  Should be :class:`int` ≥ 1.
 
 .. code:: python
 
@@ -154,13 +170,10 @@ Adds a ``spacer`` character every ``spacing``'th digit.  Should be :class:`int` 
     3 679.141 59
     >>> round('94916248055.209', spacing=5, spacer=',')
     '9,49162,48055.209'
-
-spacer
-------
-
-Default value: ``''``
-
-Adds a ``spacer`` character (string) every ``spacing``'th digit.
+    >>> round('94916248055.209726510', spacing=3, spacer=',', right_spacer=' ')
+    '94,916,248,055.209 726 510'
+    >>> round('94916248055.209726510', spacing=3, left_spacer='_')
+    '94_916_248_055.209726510'
 
 decimal
 -------
@@ -183,7 +196,7 @@ separation (sep)
 
 Default value: ``' ± '``
 
-Changes the string which separates a number from it's uncertainty.  Recognizes the special strings ``'brackets'`` for in-line bracketed uncertainty, ``'external_brackets'`` for the special case of uncertainties greater than 10, and :class:`tuple` or :class:`list` which allows number and uncertainty to be stored independently.
+Changes the string which separates a number from its uncertainty.  Recognizes the special strings ``'brackets'`` for in-line bracketed uncertainty, ``'external_brackets'`` for the special case of uncertainties greater than 10, and :class:`tuple` or :class:`list` which allows number and uncertainty to be stored independently.
 
 .. code:: python
 
@@ -204,7 +217,7 @@ format (style)
 
 Default value: ``None``
 
-Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Group's <http://drake.sharcnet.ca/>`_ preferred formatting of ``cutoff=29, spacer=3, spacing=' ', separation='brackets'`` and `The Particle Data Group's <http://pdg.lbl.gov/>`_ preferred formatting of ``cutoff=35`` (see `5.3 Rounding <http://pdg.lbl.gov/2011/reviews/rpp2011-rev-rpp-intro.pdf>`_).
+Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Group's <http://drake.sharcnet.ca/>`_ preferred formatting of ``cutoff=29``, ``spacing=3``, ``spacer=' '`` , ``separation='brackets'`` and `The Particle Data Group's <http://pdg.lbl.gov/>`_ preferred formatting of ``cutoff=35`` (see `5.3 Rounding <http://pdg.lbl.gov/2011/reviews/rpp2011-rev-rpp-intro.pdf>`_).
 
 .. code:: python
 
@@ -216,15 +229,27 @@ Allows choice of predefined formats ``'Drake'`` and ``'PDG'`` for `The Drake Gro
 
 .. note:: Should not be used in conjunction with kwarg ``output_type``/``type`` or ``notation``/``form``.
 
+markup (render)
+---------------
+
+Default value: ``None``
+
+Changes the markup to allow for rendering with ``LaTeX``/``tex``, ``markdown``/``md``, ``rst``, or ``HTML`` (all are cAsE inSensItIvE).
+
+.. code:: python
+
+    >>> from sigfig import round
+    >>> round('1234.567', '12.78', notation='eng', markup='latex')
+    '1.23 \\times 10^{3} \\pm 0.01 \\times 10^{3}'
+    >>> round('4.32E5', notation='sci', render='html')
+    '4.32×10<sup>5</sup>'
+
+.. note:: LaTeX/TeX rendering does not include math-mode delimiters. Wrap the returned string in ``$...$`` for inline math or ``\[...\]`` for display math.
+
 ----
 
 Other "Features"
 ================
-
-order of keyword arguments
---------------------------
-
-The interface for :meth:`round` allows for conflicting keyword arguments (i.e. ``cutoff=19, cutoff=20`` or ``format='Drake', sep='+/-'``) where subsequent kwargs overwrite what comes before them.  However, this feature assumes insert-ordered :class:`dict`\ionaries which is not guaranteed until Python 3.7 (and beyond).  If you are using :mod:`sigfig` with earlier versions of Python (before 3.7) without insert-ordered :class:`dict`'s the recommended usage is to avoid conflicting keyword arguments.
 
 prefix
 ------
