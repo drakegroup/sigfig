@@ -1,7 +1,6 @@
 name: version auto-incrementing, coverage testing, & package publishing
 on:
   workflow_dispatch:
-  # Use the base repository's permissions for merged fork PRs; never check out the PR head.
   pull_request_target:
     types:
       - closed
