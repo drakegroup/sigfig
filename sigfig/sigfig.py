@@ -1,7 +1,9 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from decimal import Context, Decimal, InvalidOperation, Overflow, MAX_EMAX, MIN_EMIN, ROUND_HALF_UP
+from decimal import (Context, Decimal, InvalidOperation, Overflow, MAX_EMAX, MIN_EMIN,
+                     ROUND_05UP, ROUND_CEILING, ROUND_DOWN, ROUND_FLOOR,
+                     ROUND_HALF_DOWN, ROUND_HALF_EVEN, ROUND_HALF_UP, ROUND_UP)
 from copy import copy
 from re import fullmatch
 from warnings import warn, filterwarnings, resetwarnings
@@ -40,6 +42,7 @@ _default_settings = {
     'cutoff': 9,
     'prefix': False,
     'exponent': 'E',
+    'mode': ROUND_HALF_UP,
     'round_by_sigfigs': False,
     'round_by_decimals': True,
     'given_sigfigs': 0}
@@ -142,11 +145,12 @@ class _Number:
         self.value = self.value.scaleb(power, context=self._context(self.sigfigs))
         self._exponent += power
         self._zero_power += power
-    def round_by_decimals(self, decimals):
+    def round_by_decimals(self, decimals, mode=ROUND_HALF_UP):
         '''performs rounding operation to the given 10's power'''
         last_power = -int(decimals)
         highest_power = self.max_power()
         self.value = self.value.quantize(Decimal((0, (1,), last_power)),
+                                         rounding=mode,
                                          context=self._context(highest_power - last_power + 2))
         self._exponent = last_power
         if self.zero:
@@ -283,7 +287,7 @@ def _arguments_parse(args, kwargs):
     for key in _manual_settings:
         given[key] = _manual_settings[key]
 
-    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop'}
+    keys = {'separator', 'separation', 'sep', 'format', 'sigfigs', 's', 'decimals', 'd', 'uncertainty', 'u', 'cutoff', 'spacing', 'spacer', 'decimal', 'output_type', 'output', 'type', 'style', 'prefix', 'exponent', 'notation', 'form', 'crop', 'mode'}
     for key in kwargs:
         val = kwargs[key]
         if key not in keys:
@@ -316,6 +320,12 @@ def _arguments_parse(args, kwargs):
                 given['output_type'] = str
             except:
                 warn(f"Ignoring {key}={val}. invalid uncertainty, expecting number", stacklevel=_warn_stacklevel(3))
+        elif key == 'mode':
+            if val in (ROUND_05UP, ROUND_CEILING, ROUND_DOWN, ROUND_FLOOR,
+                       ROUND_HALF_DOWN, ROUND_HALF_EVEN, ROUND_HALF_UP, ROUND_UP):
+                given[key] = val
+            else:
+                warn(f"Ignoring {key}={val}, invalid rounding mode", stacklevel=_warn_stacklevel(3))
         elif key == 'prefix':
             if type(val) == bool or val in {'major', 'sci', 'eng'}:
                 given[key] = val
@@ -428,7 +438,7 @@ def _arguments_parse(args, kwargs):
             else:
                 val = _default_settings[prop]
             given['format'][prop] = val
-    for prop in ['separator', 'prefix', 'exponent']:
+    for prop in ['separator', 'prefix', 'exponent', 'mode']:
         if prop in given:
             continue
         elif prop in _manual_settings:
@@ -480,6 +490,7 @@ def round(*args, **kwargs):
     Key usage examples:
         round('2.675', sigfigs=2) => '2.7'
         round(2.675, decimals=2)  =>  2.68
+        round(199, sigfigs=1, mode=ROUND_DOWN) => 100
         round('2.675', '0.00197') => '2.675 ± 0.002'
         round('123456.789099', '-1.15E-4', output='Drake') => '123 456.789 10(12)
 
@@ -490,11 +501,12 @@ def round(*args, **kwargs):
         return None
     given = _arguments_parse(args, kwargs)
     num = given['num']
+    mode = given['mode']
 
     if num.nan:
         return getattr(num, '_nan_input', num.value)
     if 'decimals' in given:
-        num.round_by_decimals(given['decimals'])
+        num.round_by_decimals(given['decimals'], mode)
     elif 'sigfigs' in given:
         if given['sigfigs'] > num.sigfigs:
             warn(
@@ -502,9 +514,9 @@ def round(*args, **kwargs):
                 stacklevel=_warn_stacklevel(2)
             )
         last_power = num.max_power() - given['sigfigs'] + 1
-        num.round_by_decimals(-last_power)
+        num.round_by_decimals(-last_power, mode)
         if num.sigfigs > given['sigfigs']:
-            num.round_by_decimals(given['sigfigs'] - num.max_power() - 1)
+            num.round_by_decimals(given['sigfigs'] - num.max_power() - 1, mode)
     elif 'uncertainty' in given:
         num.has_uncertainty = True
         if 'cutoff' in given:
@@ -513,13 +525,13 @@ def round(*args, **kwargs):
             cutoff = str(_manual_settings['cutoff'])
         else:
             cutoff = str(_default_settings['cutoff'])
-        unc = round(given['uncertainty'], sigfigs=len(cutoff), output='map')
+        unc = round(given['uncertainty'], sigfigs=len(cutoff), output='map', mode=mode)
         cut = _num_parse(cutoff + 'E' + str(unc.min_power()))
         if unc > cut:
-            unc = round(given['uncertainty'], sigfigs=len(cutoff)-1, output='map')
+            unc = round(given['uncertainty'], sigfigs=len(cutoff)-1, output='map', mode=mode)
             if not unc.zero and unc.value.copy_abs() < Decimal((0, (2,), unc.max_power())):
-                unc.round_by_decimals(1 - unc.max_power())
-        num.round_by_decimals(-unc.min_power())
+                unc.round_by_decimals(1 - unc.max_power(), mode)
+        num.round_by_decimals(-unc.min_power(), mode)
 
     if given['prefix']:
         power_shift = num.prefixify(given['prefix'], given['exponent'])

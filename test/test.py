@@ -7,7 +7,7 @@ Requires the following semi-colon separated CSV files:
   - test_exception.csv
 '''
 
-from decimal import Decimal, Inexact, Rounded, ROUND_DOWN, localcontext
+from decimal import Decimal, Inexact, Rounded, localcontext
 from warnings import warn, filterwarnings, resetwarnings
 from inspect import currentframe, getframeinfo
 import unittest, csv
@@ -18,6 +18,8 @@ from sys import path
 from pathlib import Path
 path.insert(0, str(Path(__file__).parent / "../sigfig"))
 from sigfig import round, _num_parse, roundit, round_unc, round_sf
+from sigfig import (ROUND_05UP, ROUND_CEILING, ROUND_DOWN, ROUND_FLOOR,
+                    ROUND_HALF_DOWN, ROUND_HALF_EVEN, ROUND_HALF_UP, ROUND_UP)
 
 def function_parse(func):
     '''Comprehends string representation of function call to
@@ -130,6 +132,58 @@ class KnownExcp(unittest.TestCase):
         self.assertRaises(eval(self.result), eval(self.func_name), *self.func_args, **self.func_kwargs)
 
 class DecimalRounding(unittest.TestCase):
+    def test_round_down(self):
+        for number, sigfigs, expected in [
+            (199, 1, 100),
+            (999, 2, 990),
+            (-199, 1, -100),
+            (990, 2, 990),
+            ('0.00999', 2, '0.0099'),
+            (Decimal('1.999'), 3, Decimal('1.99')),
+        ]:
+            with self.subTest(number=number, sigfigs=sigfigs):
+                result = round(number, sigfigs=sigfigs, mode=ROUND_DOWN)
+                self.assertEqual(result, expected)
+                self.assertIs(type(result), type(expected))
+        self.assertEqual(round(1.999, decimals=2, mode=ROUND_DOWN), 1.99)
+        self.assertEqual(round('199', decimals=-2, mode=ROUND_DOWN), '100')
+        self.assertEqual(round('0.009', decimals=2, mode=ROUND_DOWN), '0.00')
+
+    def test_rounding_modes(self):
+        for mode, positive, negative in [
+            (ROUND_DOWN, 20, -20),
+            (ROUND_UP, 30, -30),
+            (ROUND_CEILING, 30, -20),
+            (ROUND_FLOOR, 20, -30),
+            (ROUND_HALF_DOWN, 20, -20),
+            (ROUND_HALF_EVEN, 20, -20),
+            (ROUND_HALF_UP, 30, -30),
+            (ROUND_05UP, 20, -20),
+        ]:
+            with self.subTest(mode=mode):
+                self.assertEqual(round(25, sigfigs=1, mode=mode), positive)
+                self.assertEqual(round(-25, sigfigs=1, mode=mode), negative)
+                self.assertEqual(round(25, decimals=-1, mode=mode), positive)
+                self.assertEqual(round(-25, decimals=-1, mode=mode), negative)
+        self.assertEqual(round(35, sigfigs=1, mode=ROUND_HALF_EVEN), 40)
+        self.assertEqual(round(1501, sigfigs=2, mode=ROUND_05UP), 1600)
+        self.assertEqual(round('9.91', sigfigs=2, mode=ROUND_UP), '10')
+        self.assertEqual(round(25, sigfigs=1), 30)
+        self.assertEqual(round(-25, sigfigs=1), -30)
+
+    def test_uncertainty_rounding_modes(self):
+        self.assertEqual(round('12.345', '0.299', mode=ROUND_DOWN), '12.3 ± 0.2')
+        self.assertEqual(round('12.345', '0.299', cutoff=29, mode=ROUND_DOWN),
+                         '12.34 ± 0.29')
+        self.assertEqual(round('12.345', '0.456', cutoff=29, mode=ROUND_UP),
+                         '12.4 ± 0.5')
+
+    def test_invalid_rounding_mode(self):
+        for mode in ('invalid', None, []):
+            with self.subTest(mode=mode):
+                with self.assertWarnsRegex(UserWarning, 'invalid rounding mode'):
+                    self.assertEqual(round(199, sigfigs=1, mode=mode), 200)
+
     def test_decimal_context_independence(self):
         with localcontext() as context:
             context.prec = 2
@@ -143,6 +197,8 @@ class DecimalRounding(unittest.TestCase):
             self.assertEqual(round('12345.675', decimals=2), '12345.68')
             self.assertEqual(round(2.675, decimals=2), 2.68)
             self.assertEqual(round('9.995', sigfigs=3), '10.0')
+            self.assertEqual(round('12345.675', decimals=2, mode=ROUND_DOWN), '12345.67')
+            self.assertEqual(round('9.991', sigfigs=3, mode=ROUND_UP), '10.0')
             self.assertEqual(round('12345.6745', '0.005', sep=tuple), ('12345.675', '0.005'))
             self.assertEqual(round('123456789.123456789', notation='sci'), '1.23456789123456789E8')
             self.assertEqual(round('123456789.123456789', prefix=True), '123.456789123456789M')
