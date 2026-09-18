@@ -1,15 +1,11 @@
 name: version auto-incrementing, coverage testing, & package publishing
 on:
   workflow_dispatch:
-  pull_request_target:
-    types:
-      - closed
+  push:
     branches: ["master"]
 
 jobs:
   build:
-    if: github.event.pull_request.merged || github.event_name == 'workflow_dispatch'
-    
     runs-on: ubuntu-latest
     permissions:
       id-token: write
