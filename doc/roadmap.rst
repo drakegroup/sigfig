@@ -8,7 +8,7 @@ This project was created to add needed features to Python's built-in :func:`roun
 Namely:
 
     - the ability to consistently round floating point numbers despite `float's inherent lack of precision <https://docs.python.org/3/tutorial/floatingpoint.html>`_.
-    - the ability to always `round up for numbers ending with 5 <https://docs.python.org/3/library/decimal.html#decimal.ROUND_CEILING>`_ (instead of the built-in `banker's rounding <https://docs.python.org/3/library/decimal.html#decimal.ROUND_HALF_EVEN>`_).
+    - the ability to always `round up for numbers ending with 5 <https://docs.python.org/3/library/decimal.html#decimal.ROUND_HALF_UP>`_ (instead of the built-in `banker's rounding <https://docs.python.org/3/library/decimal.html#decimal.ROUND_HALF_EVEN>`_).
     - the ability to round a number by number of significant figures/digits instead of by decimal places only.
     - the ability to round a number by its associated uncertainty.
 
@@ -26,7 +26,7 @@ The Ultimate goal of the project is to add the included rounding features to the
 Separate out formatting code
 ############################
 
-The code for formatting the resultant rounded number string does not belong in the standard library's :func:`round` function but would make more sense as either it's own package, as part of the :mod:`numpy <https://pypi.org/project/numpy/>` package (ie. the :func:`format_float_positional` `function <https://docs.scipy.org/doc/numpy/reference/generated/numpy.format_float_positional.html>`_), or as part of another package involving numeric or data visualization.
+The code for formatting the resultant rounded number string does not belong in the standard library's :func:`round` function but would make more sense as either its own package, as part of the :mod:`numpy <https://pypi.org/project/numpy/>` package (ie. the :func:`format_float_positional` `function <https://docs.scipy.org/doc/numpy/reference/generated/numpy.format_float_positional.html>`_), or as part of another package involving numeric or data visualization.
 This will have the added benefit of making :mod:`sigfig`'s code more readable which is never a bad thing.
 
 Interface Overhaul

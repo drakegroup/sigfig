@@ -77,7 +77,7 @@ Can be specified with ``uncertainty``/``unc`` keyword argument or by passing as 
 Uncertainty Rounding Rules
 ==========================
 
-A number's uncertainty or error is a measure of how accurate that number is.  Consequently, the uncertainty's order of magnitude (aka number of decimals) is of greater importance than it's value resulting in the uncertainty usually being displayed with only 1 significant figure so as to not distract from it's associated number.  However, many of those in the scientific community will give 2 figures of uncertainty if the uncertainty begins with a 1 or 2.  One prominent research group (The Particle Data Group) rounds their measured uncertainties to 2 decimal places if they begin with 35 (after being rounded) and will round to 1 decimal place if they begin with 36 or higher.  This behavior is modified through the ``cutoff`` keyword argument which will always round to 1 decimal place in the event of ``cutoff=9``, round to 2 decimal places if the uncertainty begins with a 1 or 2 with ``cutoff=29`` (numbers beginning with 3-9 will be rounded to 1 decimal), and The Particle Data Group's preference sets ``cutoff=35``.
+A number's uncertainty or error is a measure of how accurate that number is.  Consequently, the uncertainty's order of magnitude (aka number of decimals) is of greater importance than its value resulting in the uncertainty usually being displayed with only 1 significant figure so as to not distract from its associated number.  However, many of those in the scientific community will give 2 figures of uncertainty if the uncertainty begins with a 1 or 2.  One prominent research group (The Particle Data Group) rounds their measured uncertainties to 2 decimal places if they begin with 35 (after being rounded) and will round to 1 decimal place if they begin with 36 or higher.  This behavior is modified through the ``cutoff`` keyword argument which will always round to 1 decimal place in the event of ``cutoff=9``, round to 2 decimal places if the uncertainty begins with a 1 or 2 with ``cutoff=29`` (numbers beginning with 3-9 will be rounded to 1 decimal), and The Particle Data Group's preference sets ``cutoff=35``.
 
 Following the rounding of the uncertainty, the given number (not uncertainty) will be rounded to the smallest magnitude of the resulting rounded uncertainty.  After all it would be confusing (or even misleading) to state a number with 6 decimals of accuracy when you're uncertain of any digit beyond the first decimal point.
 
@@ -97,6 +97,22 @@ The uncertainty magnitude value (:class:`int` ≥ 9) after which the uncertainty
     '3.14 ± 0.66'
     >>> round('3.14159', '0.6567', crop=77)
     '3.14 ± 0.66'
+
+mode (policy)
+-------------
+
+Default Value: ``ROUND_HALF_UP``
+
+Sets the `rounding policy <https://docs.python.org/3/library/decimal.html#rounding-modes>`_ for both the number and its uncertainty.
+
+.. code:: python
+
+    >>> from sigfig import round, ROUND_DOWN, ROUND_CEILING
+    >>> round(999, sigfigs=2, mode=ROUND_DOWN)
+    990
+    >>> round('-1.5', s=1, policy=ROUND_CEILING)
+    '-1'
+
 
 ----
 
@@ -180,7 +196,7 @@ separation (sep)
 
 Default value: ``' ± '``
 
-Changes the string which separates a number from it's uncertainty.  Recognizes the special strings ``'brackets'`` for in-line bracketed uncertainty, ``'external_brackets'`` for the special case of uncertainties greater than 10, and :class:`tuple` or :class:`list` which allows number and uncertainty to be stored independently.
+Changes the string which separates a number from its uncertainty.  Recognizes the special strings ``'brackets'`` for in-line bracketed uncertainty, ``'external_brackets'`` for the special case of uncertainties greater than 10, and :class:`tuple` or :class:`list` which allows number and uncertainty to be stored independently.
 
 .. code:: python
 

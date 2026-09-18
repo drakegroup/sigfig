@@ -272,6 +272,7 @@
 (2.675,);{'decimals':2};2.68
 (-2.675,);{'decimals':2};-2.68
 ('123456789012345678901234567890.125',);{'decimals':2};'123456789012345678901234567890.13'
+('-123456789012345678901234567890.125',);{'decimals':2};'-123456789012345678901234567890.13'
 (Decimal('123456789012345678901234567890.125'),);{'decimals':2};Decimal('123456789012345678901234567890.13')
 ('1.2',);{'decimals':40};'1.2' + '0' * 39
 ('123456789012345678901234567890.125', '0.05');{'sep':tuple};('123456789012345678901234567890.13', '0.05')
@@ -333,3 +334,18 @@
 (0.2568,);{'decimals':5, 'spacing':3, 'spacer':',', 'decimal':'.', 'right_spacer':''};'0.25680'
 (1234567.891011,);{'decimals':6, 'left_spacer':',', 'spacing':3};'1,234,567.891011'
 ('341234.2576', '.00222');{'cutoff': 30, 'spacing': 3, 'left_spacer': ' '};'341 234.2576 ± 0.0022'
+(199,);{'sigfigs':1, 'mode':ROUND_DOWN};100
+(999,);{'sigfigs':2, 'mode':ROUND_DOWN};990
+('-1.5,);{'s':1, 'mode':ROUND_CEILING};'-1'
+(-199,);{'sigfigs':1, 'mode':ROUND_DOWN};-100
+(999,);{'sigfigs':2, 'mode':ROUND_UP};1000
+('1.21',);{'decimals':1, 'mode':ROUND_CEILING};'1.3'
+('-1.21',);{'decimals':1, 'policy':ROUND_FLOOR};'-1.3'
+(Decimal('2.65'),);{'decimals':1, 'mode':ROUND_HALF_DOWN};Decimal('2.6')
+(2.65,);{'decimals':1, 'mode':ROUND_HALF_EVEN};2.6
+('2.75',);{'decimals':1, 'mode':ROUND_HALF_EVEN};'2.8'
+('-2.65',);{'decimals':1, 'policy':ROUND_HALF_UP};'-2.7'
+('1.51',);{'decimals':1, 'mode':ROUND_05UP};'1.6'
+('1.61',);{'decimals':1, 'mode':ROUND_05UP};'1.6'
+('3.14159', '0.001567');{'mode':ROUND_DOWN, 'sep':tuple};('3.141', '0.001')
+('3.14159', '0.00399');{'policy':ROUND_DOWN, 'format':'Drake', 'sep':tuple};('3.141', '0.003')

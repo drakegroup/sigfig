@@ -7,7 +7,7 @@ Requires the following semi-colon separated CSV files:
   - test_exception.csv
 '''
 
-from decimal import Decimal, Inexact, Rounded, ROUND_DOWN, localcontext
+from decimal import Decimal, Inexact, Rounded, localcontext
 from warnings import warn, filterwarnings, resetwarnings
 from inspect import currentframe, getframeinfo
 from runpy import run_path
@@ -20,6 +20,7 @@ from sys import path, exit
 from pathlib import Path
 path.insert(0, str(Path(__file__).parent / "../sigfig"))
 from sigfig import round, _num_parse, roundit, round_unc, round_sf
+from sigfig import ROUND_05UP, ROUND_CEILING, ROUND_DOWN, ROUND_FLOOR, ROUND_HALF_DOWN, ROUND_HALF_EVEN, ROUND_HALF_UP, ROUND_UP
 
 def function_parse(func):
     '''Comprehends string representation of function call to
@@ -143,6 +144,8 @@ class DecimalRounding(unittest.TestCase):
             context.clear_flags()
             original = context.copy()
             self.assertEqual(round('12345.675', decimals=2), '12345.68')
+            self.assertEqual(round('12345.675', decimals=2, mode=ROUND_DOWN), '12345.67')
+            self.assertEqual(round('2.75', decimals=1, mode=ROUND_HALF_EVEN), '2.8')
             self.assertEqual(round(2.675, decimals=2), 2.68)
             self.assertEqual(round('9.995', sigfigs=3), '10.0')
             self.assertEqual(round('12345.6745', '0.005', sep=tuple), ('12345.675', '0.005'))
